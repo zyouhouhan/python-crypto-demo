@@ -1,0 +1,482 @@
+import streamlit as st
+import secrets
+import time
+from math import gcd
+
+# ==========================================
+# 1. RSA アルゴリズムの実装 (Classes & Functions)
+# ==========================================
+
+def is_prime(n, k=45):
+    if n <= 1: return False
+    if n <= 3: return True
+    if n % 2 == 0: return False
+    r, d = 0, n - 1
+    while d % 2 == 0:
+        r += 1
+        d //= 2
+    for _ in range(k):
+        a = secrets.randbelow(n - 3) + 2
+        x = pow(a, d, n)
+        if x == 1 or x == n - 1:
+            continue
+        for _ in range(r - 1):
+            x = pow(x, 2, n)
+            if x == n - 1:
+                break
+        else:
+            return False
+    return True
+
+def generate_prime(bits):
+    while True:
+        p = secrets.randbits(bits)
+        p |= (1 << bits - 1) | 1
+        if is_prime(p):
+            return p
+
+def extended_gcd(a, b):
+    if a == 0:
+        return (b, 0, 1)
+    else:
+        g, y, x = extended_gcd(b % a, a)
+        return (g, x - (b // a) * y, y)
+
+def modinv(a, m):
+    g, x, y = extended_gcd(a, m)
+    if g != 1:
+        raise Exception('modular inverse does not exist')
+    return x % m
+
+def generate_rsa_keypair(bits=1024):
+    # Streamlit用にキャッシュせずに都度生成
+    p = generate_prime(bits // 2)
+    q = generate_prime(bits // 2)
+    n = p * q
+    phi = (p - 1) * (q - 1)
+    e = 65537
+    while gcd(e, phi) != 1:
+        e = secrets.randbelow(phi - 3) + 3
+        if e % 2 == 0:
+            e += 1
+    d = modinv(e, phi)
+    return ((e, n), (d, n))
+
+# PKCS#1 v1.5 padding
+def pkcs1_v1_5_pad(data: bytes, block_size: int) -> bytes:
+    if len(data) > block_size - 11:
+        raise ValueError("データが長すぎます。鍵長を大きくするか、文を短くしてください。")
+    padding_len = block_size - len(data) - 3
+    padding = b''
+    while len(padding) < padding_len:
+        b_ = secrets.token_bytes(1)
+        if b_ != b'\x00':
+            padding += b_
+    return b'\x00\x02' + padding + b'\x00' + data
+
+def pkcs1_v1_5_unpad(data: bytes) -> bytes:
+    if len(data) < 11 or data[0:2] != b'\x00\x02':
+        raise ValueError("パディング形式エラー")
+    sep_idx = data.find(b'\x00', 2)
+    if sep_idx < 0:
+        raise ValueError("パディング区切りが見つかりません")
+    return data[sep_idx+1:]
+
+def rsa_encrypt(pk, plaintext):
+    key, n = pk
+    k = (n.bit_length() + 7) // 8
+    data = plaintext.encode('utf-8')
+    max_block_size = k - 11
+    encrypted_blocks = []
+    
+    # ブロック分割処理
+    for i in range(0, len(data), max_block_size):
+        block = data[i:i+max_block_size]
+        padded = pkcs1_v1_5_pad(block, k)
+        m = int.from_bytes(padded, 'big')
+        c = pow(m, key, n)
+        encrypted_blocks.append(c)
+    return encrypted_blocks
+
+def rsa_decrypt(pk, ciphertext_blocks):
+    key, n = pk
+    k = (n.bit_length() + 7) // 8
+    decrypted_blocks = []
+    
+    for c in ciphertext_blocks:
+        m = pow(c, key, n)
+        padded = m.to_bytes(k, 'big')
+        try:
+            data = pkcs1_v1_5_unpad(padded)
+            decrypted_blocks.append(data)
+        except ValueError:
+            return None # 復号失敗
+    
+    return b''.join(decrypted_blocks).decode('utf-8', errors='ignore')
+
+# ==========================================
+# 2. AES アルゴリズムの実装 (Classes & Constants)
+# ==========================================
+
+SBOX = [
+    0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
+    0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0,
+    0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15,
+    0x04, 0xc7, 0x23, 0xc3, 0x18, 0x96, 0x05, 0x9a, 0x07, 0x12, 0x80, 0xe2, 0xeb, 0x27, 0xb2, 0x75,
+    0x09, 0x83, 0x2c, 0x1a, 0x1b, 0x6e, 0x5a, 0xa0, 0x52, 0x3b, 0xd6, 0xb3, 0x29, 0xe3, 0x2f, 0x84,
+    0x53, 0xd1, 0x00, 0xed, 0x20, 0xfc, 0xb1, 0x5b, 0x6a, 0xcb, 0xbe, 0x39, 0x4a, 0x4c, 0x58, 0xcf,
+    0xd0, 0xef, 0xaa, 0xfb, 0x43, 0x4d, 0x33, 0x85, 0x45, 0xf9, 0x02, 0x7f, 0x50, 0x3c, 0x9f, 0xa8,
+    0x51, 0xa3, 0x40, 0x8f, 0x92, 0x9d, 0x38, 0xf5, 0xbc, 0xb6, 0xda, 0x21, 0x10, 0xff, 0xf3, 0xd2,
+    0xcd, 0x0c, 0x13, 0xec, 0x5f, 0x97, 0x44, 0x17, 0xc4, 0xa7, 0x7e, 0x3d, 0x64, 0x5d, 0x19, 0x73,
+    0x60, 0x81, 0x4f, 0xdc, 0x22, 0x2a, 0x90, 0x88, 0x46, 0xee, 0xb8, 0x14, 0xde, 0x5e, 0x0b, 0xdb,
+    0xe0, 0x32, 0x3a, 0x0a, 0x49, 0x06, 0x24, 0x5c, 0xc2, 0xd3, 0xac, 0x62, 0x91, 0x95, 0xe4, 0x79,
+    0xe7, 0xc8, 0x37, 0x6d, 0x8d, 0xd5, 0x4e, 0xa9, 0x6c, 0x56, 0xf4, 0xea, 0x65, 0x7a, 0xae, 0x08,
+    0xba, 0x78, 0x25, 0x2e, 0x1c, 0xa6, 0xb4, 0xc6, 0xe8, 0xdd, 0x74, 0x1f, 0x4b, 0xbd, 0x8b, 0x8a,
+    0x70, 0x3e, 0xb5, 0x66, 0x48, 0x03, 0xf6, 0x0e, 0x61, 0x35, 0x57, 0xb9, 0x86, 0xc1, 0x1d, 0x9e,
+    0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf,
+    0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16
+]
+
+INV_SBOX = [
+    0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb,
+    0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87, 0x34, 0x8e, 0x43, 0x44, 0xc4, 0xde, 0xe9, 0xcb,
+    0x54, 0x7b, 0x94, 0x32, 0xa6, 0xc2, 0x23, 0x3d, 0xee, 0x4c, 0x95, 0x0b, 0x42, 0xfa, 0xc3, 0x4e,
+    0x08, 0x2e, 0xa1, 0x66, 0x28, 0xd9, 0x24, 0xb2, 0x76, 0x5b, 0xa2, 0x49, 0x6d, 0x8b, 0xd1, 0x25,
+    0x72, 0xf8, 0xf6, 0x64, 0x86, 0x68, 0x98, 0x16, 0xd4, 0xa4, 0x5c, 0xcc, 0x5d, 0x65, 0xb6, 0x92,
+    0x6c, 0x70, 0x48, 0x50, 0xfd, 0xed, 0xb9, 0xda, 0x5e, 0x15, 0x46, 0x57, 0xa7, 0x8d, 0x9d, 0x84,
+    0x90, 0xd8, 0xab, 0x00, 0x8c, 0xbc, 0xd3, 0x0a, 0xf7, 0xe4, 0x58, 0x05, 0xb8, 0xb3, 0x45, 0x06,
+    0xd0, 0x2c, 0x1e, 0x8f, 0xca, 0x3f, 0x0f, 0x02, 0xc1, 0xaf, 0xbd, 0x03, 0x01, 0x13, 0x8a, 0x6b,
+    0x3a, 0x91, 0x11, 0x41, 0x4f, 0x67, 0xdc, 0xea, 0x97, 0xf2, 0xcf, 0xce, 0xf0, 0xb4, 0xe6, 0x73,
+    0x96, 0xac, 0x74, 0x22, 0xe7, 0xad, 0x35, 0x85, 0xe2, 0xf9, 0x37, 0xe8, 0x1c, 0x75, 0xdf, 0x6e,
+    0x47, 0xf1, 0x1a, 0x71, 0x1d, 0x29, 0xc5, 0x89, 0x6f, 0xb7, 0x62, 0x0e, 0xaa, 0x18, 0xbe, 0x1b,
+    0xfc, 0x56, 0x3e, 0x4b, 0xc6, 0xd2, 0x79, 0x20, 0x9a, 0xdb, 0xc0, 0xfe, 0x78, 0xcd, 0x5a, 0xf4,
+    0x1f, 0xdd, 0xa8, 0x33, 0x88, 0x07, 0xc7, 0x31, 0xb1, 0x12, 0x10, 0x59, 0x27, 0x80, 0xec, 0x5f,
+    0x60, 0x51, 0x7f, 0xa9, 0x19, 0xb5, 0x4a, 0x0d, 0x2d, 0xe5, 0x7a, 0x9f, 0x93, 0xc9, 0x9c, 0xef,
+    0xa0, 0xe0, 0x3b, 0x4d, 0xae, 0x2a, 0xf5, 0xb0, 0xc8, 0xeb, 0xbb, 0x3c, 0x83, 0x53, 0x99, 0x61,
+    0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d
+]
+
+class AES:
+    def __init__(self, key_size=128):
+        self.key_size = key_size
+        self.nb = 4
+        self.nk = key_size // 32
+        self.nr = {128: 10, 192: 12, 256: 14}[key_size]
+
+    def sub_bytes(self, state):
+        for i in range(4):
+            for j in range(4):
+                state[i][j] = SBOX[state[i][j]]
+        return state
+
+    def inv_sub_bytes(self, state):
+        for i in range(4):
+            for j in range(4):
+                state[i][j] = INV_SBOX[state[i][j]]
+        return state
+
+    def shift_rows(self, state):
+        state[1] = state[1][1:] + state[1][:1]
+        state[2] = state[2][2:] + state[2][:2]
+        state[3] = state[3][3:] + state[3][:3]
+        return state
+
+    def inv_shift_rows(self, state):
+        state[1] = state[1][-1:] + state[1][:-1]
+        state[2] = state[2][-2:] + state[2][:-2]
+        state[3] = state[3][-3:] + state[3][:-3]
+        return state
+
+    def mix_columns(self, state):
+        def gmul(a, b):
+            p = 0
+            for _ in range(8):
+                if b & 1: p ^= a
+                hi_bit_set = a & 0x80
+                a <<= 1
+                if hi_bit_set: a ^= 0x1b
+                a &= 0xff
+                b >>= 1
+            return p
+        for i in range(4):
+            s0, s1, s2, s3 = state[0][i], state[1][i], state[2][i], state[3][i]
+            state[0][i] = gmul(0x02, s0) ^ gmul(0x03, s1) ^ s2 ^ s3
+            state[1][i] = s0 ^ gmul(0x02, s1) ^ gmul(0x03, s2) ^ s3
+            state[2][i] = s0 ^ s1 ^ gmul(0x02, s2) ^ gmul(0x03, s3)
+            state[3][i] = gmul(0x03, s0) ^ s1 ^ s2 ^ gmul(0x02, s3)
+        return state
+
+    def inv_mix_columns(self, state):
+        def gmul(a, b):
+            p = 0
+            for _ in range(8):
+                if b & 1: p ^= a
+                hi_bit_set = a & 0x80
+                a <<= 1
+                if hi_bit_set: a ^= 0x1b
+                a &= 0xff
+                b >>= 1
+            return p
+        for i in range(4):
+            s0, s1, s2, s3 = state[0][i], state[1][i], state[2][i], state[3][i]
+            state[0][i] = gmul(0x0e, s0) ^ gmul(0x0b, s1) ^ gmul(0x0d, s2) ^ gmul(0x09, s3)
+            state[1][i] = gmul(0x09, s0) ^ gmul(0x0e, s1) ^ gmul(0x0b, s2) ^ gmul(0x0d, s3)
+            state[2][i] = gmul(0x0d, s0) ^ gmul(0x09, s1) ^ gmul(0x0e, s2) ^ gmul(0x0b, s3)
+            state[3][i] = gmul(0x0b, s0) ^ gmul(0x0d, s1) ^ gmul(0x09, s2) ^ gmul(0x0e, s3)
+        return state
+
+    def add_round_key(self, state, round_key):
+        for i in range(4):
+            for j in range(4):
+                state[i][j] ^= round_key[i][j]
+        return state
+
+    def key_expansion(self, key):
+        def sub_word(word): return [SBOX[b] for b in word]
+        def rot_word(word): return word[1:] + word[:1]
+        def rcon(i):
+            r = 1
+            for _ in range(i - 1):
+                r = ((r << 1) ^ 0x1b) & 0xff if r & 0x80 else r << 1
+            return [r, 0, 0, 0]
+
+        key_words = [key[i:i + 4] for i in range(0, len(key), 4)]
+        expanded_key = key_words[:]
+        for i in range(self.nk, self.nb * (self.nr + 1)):
+            temp = expanded_key[i - 1][:]
+            if i % self.nk == 0:
+                temp = [a ^ b for a, b in zip(sub_word(rot_word(temp)), rcon(i // self.nk))]
+            elif self.nk > 6 and i % self.nk == 4:
+                temp = sub_word(temp)
+            expanded_key.append([a ^ b for a, b in zip(expanded_key[i - self.nk], temp)])
+        return expanded_key
+
+    def encrypt_block(self, block, expanded_key):
+        state = [[block[i + 4*j] for j in range(4)] for i in range(4)]
+        round_key = [[expanded_key[j][i] for j in range(4)] for i in range(4)]
+        state = self.add_round_key(state, round_key)
+        for rnd in range(1, self.nr):
+            state = self.sub_bytes(state)
+            state = self.shift_rows(state)
+            state = self.mix_columns(state)
+            round_key = [[expanded_key[4*rnd + j][i] for j in range(4)] for i in range(4)]
+            state = self.add_round_key(state, round_key)
+        state = self.sub_bytes(state)
+        state = self.shift_rows(state)
+        round_key = [[expanded_key[4*self.nr + j][i] for j in range(4)] for i in range(4)]
+        state = self.add_round_key(state, round_key)
+        return [state[i][j] for j in range(4) for i in range(4)]
+
+    def decrypt_block(self, block, expanded_key):
+        state = [[block[i + 4*j] for j in range(4)] for i in range(4)]
+        round_key = [[expanded_key[4*self.nr + j][i] for j in range(4)] for i in range(4)]
+        state = self.add_round_key(state, round_key)
+        for rnd in range(self.nr-1, 0, -1):
+            state = self.inv_shift_rows(state)
+            state = self.inv_sub_bytes(state)
+            round_key = [[expanded_key[4*rnd + j][i] for j in range(4)] for i in range(4)]
+            state = self.add_round_key(state, round_key)
+            state = self.inv_mix_columns(state)
+        state = self.inv_shift_rows(state)
+        state = self.inv_sub_bytes(state)
+        round_key = [[expanded_key[j][i] for j in range(4)] for i in range(4)]
+        state = self.add_round_key(state, round_key)
+        return [state[i][j] for j in range(4) for i in range(4)]
+
+def pkcs7_pad(data: bytes, block_size: int = 16) -> bytes:
+    pad_len = block_size - (len(data) % block_size)
+    if pad_len == 0: pad_len = block_size
+    return data + bytes([pad_len]) * pad_len
+
+def pkcs7_unpad(data: bytes) -> bytes:
+    if len(data) == 0: raise ValueError('空データ')
+    pad_len = data[-1]
+    if pad_len < 1 or pad_len > 16: raise ValueError('パディング異常')
+    if data[-pad_len:] != bytes([pad_len]) * pad_len: raise ValueError('パディング不一致')
+    return data[:-pad_len]
+
+# ==========================================
+# 3. Streamlit UI の実装
+# ==========================================
+
+st.set_page_config(page_title="Classic Crypto Demo", page_icon="🔐", layout="centered")
+
+st.title("🔐 Pure Python Crypto Demo")
+st.markdown("""
+Pythonのみで（ライブラリに頼らず）ゼロから実装した **RSA** と **AES** 暗号アルゴリズムのデモアプリです。
+内部の数学的処理やビット操作をコードで完全に再現しています。
+""")
+
+tab_rsa, tab_aes = st.tabs(["🔑 RSA (公開鍵暗号)", "🛡️ AES (共通鍵暗号)"])
+
+# --- RSA タブ ---
+with tab_rsa:
+    st.header("RSA Encryption")
+    st.info("素因数分解の困難性を利用した公開鍵暗号方式です。")
+    
+    # セッション状態の初期化
+    if 'rsa_keys' not in st.session_state:
+        st.session_state['rsa_keys'] = None
+
+    # 設定と鍵生成
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        bits = st.selectbox("鍵のビット長 (大きいほど安全ですが遅くなります)", [512, 1024, 2048], index=1)
+    with col2:
+        st.write("") # スペース調整
+        st.write("") 
+        if st.button("鍵ペアを生成"):
+            with st.spinner('巨大な素数を探索中...'):
+                start_time = time.time()
+                st.session_state['rsa_keys'] = generate_rsa_keypair(bits)
+                elapsed = time.time() - start_time
+            st.success(f"鍵生成完了 ({elapsed:.3f}秒)")
+
+    # 鍵の表示
+    if st.session_state['rsa_keys']:
+        pub, priv = st.session_state['rsa_keys']
+        e, n = pub
+        d, _ = priv
+        
+        with st.expander("生成された鍵の詳細を見る", expanded=True):
+            st.markdown(f"**Public Key (e, n):**")
+            st.code(f"e = {e}\nn = {n}")
+            st.markdown(f"**Private Key (d, n):**")
+            st.code(f"d = {d}\nn = {n}")
+
+        # 暗号化・復号エリア
+        st.divider()
+        rsa_msg = st.text_input("暗号化したいメッセージ (RSA)", "Hello, RSA World!")
+        
+        col_enc, col_dec = st.columns(2)
+        
+        with col_enc:
+            if st.button("暗号化 (Encrypt)"):
+                if not rsa_msg:
+                    st.warning("メッセージを入力してください")
+                else:
+                    try:
+                        # 暗号化実行
+                        encrypted_ints = rsa_encrypt(pub, rsa_msg)
+                        # 表示用にHEX文字列化
+                        hex_str = "".join([f"{x:x}" for x in encrypted_ints])
+                        st.session_state['rsa_cipher'] = encrypted_ints
+                        st.session_state['rsa_cipher_show'] = hex_str
+                    except ValueError as ve:
+                        st.error(f"エラー: {ve}")
+
+        with col_dec:
+            if st.button("復号 (Decrypt)"):
+                if 'rsa_cipher' not in st.session_state:
+                    st.warning("先に暗号化してください")
+                else:
+                    decrypted_text = rsa_decrypt(priv, st.session_state['rsa_cipher'])
+                    if decrypted_text:
+                        st.session_state['rsa_decrypted'] = decrypted_text
+                    else:
+                        st.error("復号に失敗しました（パディングエラーなど）")
+
+        # 結果表示
+        if 'rsa_cipher_show' in st.session_state:
+            st.text_area("暗号文 (16進数表現)", st.session_state['rsa_cipher_show'], height=100)
+        
+        if 'rsa_decrypted' in st.session_state:
+            st.success(f"復号された平文: {st.session_state['rsa_decrypted']}")
+
+    else:
+        st.warning("👈 まずは「鍵ペアを生成」ボタンを押してください。")
+
+# --- AES タブ ---
+with tab_aes:
+    st.header("AES Encryption")
+    st.info("SPN構造を持つ、現在標準的な共通鍵暗号方式です。(ECBモードで動作)")
+
+    if 'aes_key' not in st.session_state:
+        st.session_state['aes_key'] = None
+
+    # 設定
+    aes_bits = st.selectbox("AES鍵長", [128, 192, 256])
+    
+    col_a1, col_a2 = st.columns([3, 1])
+    with col_a1:
+        # 鍵の手動入力または生成表示
+        key_input = st.text_input("秘密鍵 (Hex) - 空欄で自動生成", value="" if not st.session_state['aes_key'] else st.session_state['aes_key'].hex())
+    with col_a2:
+        st.write("")
+        st.write("")
+        if st.button("ランダム鍵生成"):
+            new_key = secrets.token_bytes(aes_bits // 8)
+            st.session_state['aes_key'] = new_key
+            st.rerun()
+
+    # 入力された鍵の処理
+    current_key_bytes = None
+    if key_input:
+        try:
+            current_key_bytes = bytes.fromhex(key_input)
+            # 長さチェック
+            if len(current_key_bytes) != aes_bits // 8:
+                st.error(f"鍵の長さが正しくありません。{aes_bits}ビット({aes_bits//8}バイト)必要ですが、{len(current_key_bytes)}バイトです。")
+                current_key_bytes = None
+            else:
+                st.session_state['aes_key'] = current_key_bytes
+        except:
+            st.error("有効な16進数ではありません")
+
+    if st.session_state['aes_key']:
+        st.success(f"現在の鍵: {st.session_state['aes_key'].hex()}")
+        
+        st.divider()
+        aes_msg = st.text_input("暗号化したいメッセージ (AES)", "Hello, AES World!")
+
+        col_aes_enc, col_aes_dec = st.columns(2)
+        
+        # AES インスタンス化
+        aes = AES(aes_bits)
+        
+        with col_aes_enc:
+            if st.button("AES 暗号化"):
+                if not aes_msg:
+                    st.warning("メッセージを入力してください")
+                else:
+                    # 鍵スケジュール
+                    expanded_key = aes.key_expansion(st.session_state['aes_key'])
+                    # パディング
+                    raw_bytes = aes_msg.encode('utf-8')
+                    padded = pkcs7_pad(raw_bytes)
+                    # 暗号化 (ECB)
+                    out = bytearray()
+                    for i in range(0, len(padded), 16):
+                        block = list(padded[i:i+16])
+                        enc_block = aes.encrypt_block(block, expanded_key)
+                        out.extend(bytes(enc_block))
+                    
+                    st.session_state['aes_cipher'] = bytes(out)
+
+        with col_aes_dec:
+            if st.button("AES 復号"):
+                if 'aes_cipher' not in st.session_state:
+                    st.warning("先に暗号化してください")
+                else:
+                    expanded_key = aes.key_expansion(st.session_state['aes_key'])
+                    cipher_data = st.session_state['aes_cipher']
+                    
+                    out = bytearray()
+                    for i in range(0, len(cipher_data), 16):
+                        block = list(cipher_data[i:i+16])
+                        dec_block = aes.decrypt_block(block, expanded_key)
+                        out.extend(bytes(dec_block))
+                    
+                    try:
+                        unpadded = pkcs7_unpad(out)
+                        st.session_state['aes_decrypted'] = unpadded.decode('utf-8')
+                    except Exception as e:
+                        st.error(f"復号/パディング除去エラー: {e}")
+
+        # 結果表示
+        if 'aes_cipher' in st.session_state:
+            st.markdown("**暗号文 (Hex):**")
+            st.code(st.session_state['aes_cipher'].hex(), language="text")
+        
+        if 'aes_decrypted' in st.session_state:
+             st.success(f"復号された平文: {st.session_state['aes_decrypted']}")
