@@ -303,7 +303,7 @@ st.set_page_config(page_title="Classic Crypto Demo", page_icon="🔐", layout="c
 
 st.title("🔐 Pure Python Crypto Demo")
 st.markdown("""
-Pythonのみで（ライブラリに頼らず）ゼロから実装した **RSA** と **AES** 暗号アルゴリズムのデモアプリです。
+Pythonのみでゼロから実装した **RSA** と **AES** 暗号アルゴリズムのデモアプリです。
 内部の数学的処理やビット操作をコードで完全に再現しています。
 """)
 
@@ -480,3 +480,4 @@ with tab_aes:
         
         if 'aes_decrypted' in st.session_state:
              st.success(f"復号された平文: {st.session_state['aes_decrypted']}")
+
