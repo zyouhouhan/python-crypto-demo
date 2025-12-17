@@ -2,10 +2,9 @@ import streamlit as st
 import secrets
 import time
 from math import gcd
-import io # ダウンロード機能のために追加
 
 # ==========================================
-# 1. RSA アルゴリズムの実装 (変更なし)
+# 1. RSA アルゴリズムの実装 (Classes & Functions)
 # ==========================================
 
 def is_prime(n, k=45):
@@ -49,15 +48,10 @@ def modinv(a, m):
         raise Exception('modular inverse does not exist')
     return x % m
 
-# ステータス表示(D)のために、内部で分割して呼び出せるよう構造を維持しつつ定義
-def generate_rsa_keypair_steps(bits=1024, status_callback=None):
-    if status_callback: status_callback("素数 p を生成中...")
+def generate_rsa_keypair(bits=1024):
+    # Streamlit用にキャッシュせずに都度生成
     p = generate_prime(bits // 2)
-    
-    if status_callback: status_callback("素数 q を生成中...")
     q = generate_prime(bits // 2)
-    
-    if status_callback: status_callback("鍵 (e, d, n) を計算中...")
     n = p * q
     phi = (p - 1) * (q - 1)
     e = 65537
@@ -68,10 +62,7 @@ def generate_rsa_keypair_steps(bits=1024, status_callback=None):
     d = modinv(e, phi)
     return ((e, n), (d, n))
 
-# 互換性のためのラッパー
-def generate_rsa_keypair(bits=1024):
-    return generate_rsa_keypair_steps(bits)
-
+# PKCS#1 v1.5 padding
 def pkcs1_v1_5_pad(data: bytes, block_size: int) -> bytes:
     if len(data) > block_size - 11:
         raise ValueError("データが長すぎます。鍵長を大きくするか、文を短くしてください。")
@@ -97,6 +88,8 @@ def rsa_encrypt(pk, plaintext):
     data = plaintext.encode('utf-8')
     max_block_size = k - 11
     encrypted_blocks = []
+    
+    # ブロック分割処理
     for i in range(0, len(data), max_block_size):
         block = data[i:i+max_block_size]
         padded = pkcs1_v1_5_pad(block, k)
@@ -109,6 +102,7 @@ def rsa_decrypt(pk, ciphertext_blocks):
     key, n = pk
     k = (n.bit_length() + 7) // 8
     decrypted_blocks = []
+    
     for c in ciphertext_blocks:
         m = pow(c, key, n)
         padded = m.to_bytes(k, 'big')
@@ -116,11 +110,12 @@ def rsa_decrypt(pk, ciphertext_blocks):
             data = pkcs1_v1_5_unpad(padded)
             decrypted_blocks.append(data)
         except ValueError:
-            return None 
+            return None # 復号失敗
+    
     return b''.join(decrypted_blocks).decode('utf-8', errors='ignore')
 
 # ==========================================
-# 2. AES アルゴリズムの実装 (変更なし)
+# 2. AES アルゴリズムの実装 (Classes & Constants)
 # ==========================================
 
 SBOX = [
@@ -304,189 +299,211 @@ def pkcs7_unpad(data: bytes) -> bytes:
 # 3. Streamlit UI の実装
 # ==========================================
 
-st.set_page_config(page_title="Classic Crypto Demo", page_icon="🔐", layout="wide") # レイアウトをWideに変更
+st.set_page_config(page_title="Classic Crypto Demo", page_icon="🔐", layout="centered")
 
 st.title("🔐 Pure Python Crypto Demo")
 
-# 説明文（アコーディオン形式）
 with st.expander("ℹ️ 暗号技術の詳しい解説を読む（クリックして展開）"):
     st.markdown("""
-    Pythonのみで（ライブラリに頼らず）ゼロから実装した **RSA** と **AES** 暗号アルゴリズムのデモアプリです。
-    内部の数学的処理やビット操作をコードで完全に再現しています。
-    
-    ### 機能について
-    - **RSA**: 巨大な素数を使った公開鍵暗号。鍵の生成から体験できます。
-    - **AES**: SPN構造を持つ共通鍵暗号。現在はECBモードで動作します。
+●暗号について 
+
+　暗号とは、発信者と受信者以外の誰にも知られないように情報を受け渡すための技術です。 
+
+　シーザー暗号を例に挙げましょう。紀元前1世紀ごろにローマ帝国を支配したジュリアス・シーザーが使用したことからこの名前がつけられています。この暗号の仕組みはとても単純です。アルファベットの文章において、その各文字をアルファベット順に何文字かずらすのです。 
+
+このような文章をシーザー暗号を用いて暗号化するとしましょう。3文字ずらすことにします。 
+
+There was a table set out under a tree in front of the house and the march hare and the hatter were having tea at it. 
+
+これがアルファベット順です。 
+
+ABCDEFGHIJKLMNOPQRSTUVWXYZ 
+
+この暗号化の答えは、次のようになります。 
+
+Wkhuh zdv d wdeoh vhw rxw xqghu d wuhh lq iurqw ri wkh krxvh dqg wkh pdufk kduh dqg wkh kdwwhu zhuh kdylqj whd dw lw. 
+
+この暗号文は、第三者からすると意味不明なアルファベットの羅列にしか見えません。しかし、「この暗号は元の文章（元の文章を平文と呼びます）のアルファベット順を3つずらしたものだ」と知っている受信者からすれば、この文章を平文に戻す（平文に戻す動作を復号と呼びます）ためには、この暗号文のアルファベット順を3つ逆にずらすだけでよいのです。発信者と受信者以外には知られないように情報を受け渡すとは、こういったことです。 
+
+では、もし第三者がこの暗号文を解読するとしたら、どういった方法を使えばよいでしょうか。 
+
+まず、「この文章は、平文をアルファベット順に3つずらした暗号だ」という情報さえわかれば、この暗号文を簡単に解読できます。逆にいうと、発信者と受信者はこの情報を絶対に秘密にしなくてはなりません。こういった暗号化のルールを鍵と呼びます。 
+
+また、暗号文をよく観察すると、ある特徴が浮かび上がってきます。 
+
+まず、「wkh」というのがよく出てきますね。これをもし仮に英語の「the」だと仮定すると、最初の「Wkhuh」は「Theue」…？というように、シーザー暗号は暗号文だけを考えてもかなり解読できてしまうので、暗号としてはとても弱く、実用に適さないものです。こういった暗号の仕組み自体の弱点を暗号の脆弱性（ぜいじゃくせい）と呼びます。 
+
+こうしてみると、暗号を実用的なものにするためには、①鍵を絶対に第三者にバレないようにすること、②暗号文から平文を推測されないようにすること、という二つの条件が必要であることがわかります。 
+
+ 
+
+●RSA暗号について 
+
+　RSA暗号は、暗号の一つです。1977年に開発され、現在に至るまでインターネット通信の暗号化など広く用いられています。この暗号の特徴は、公開鍵暗号方式というシステムを採用したことです。 
+
+シーザー暗号では、発信者も受信者も共通して「アルファベット順を３つずらす」というシステムに基づき暗号化と復号を行っていました。これを「共通鍵暗号方式」と呼びます。しかし、この方式では、受信者は発信者から鍵を受け取らなくては復号ができません。その受け渡す過程で、鍵を第三者に盗み取られてしまうかもしれないという脆弱性があります。 
+
+この脆弱性へ対処できるのが公開鍵暗号方式です。この方式による暗号化では、まず受信者が、暗号化を行う公開鍵と、復号を行う秘密鍵との２つの鍵を作ります。そして公開鍵を発信者に送り、発信者は公開鍵で平文を暗号化します。こうして、発信者からの暗号文を受信者が秘密鍵で復号します。この場合、復号する鍵を受け渡す作業が発生しないため、鍵を第三者に盗まれることが減ります。 
+
+それでは、どのようにして公開鍵と秘密鍵を関連付け、しかも秘密鍵を知られないようにするのでしょうか。それには、素因数分解という方法を使います。例えば1765117147=41771×42257という素因数分解を計算することはとても困難です。2.3.5…と素数で次々に割って計算していくと、41771に辿り着くまでには長い時間がかかります。 
+
+このことを用いて、RSA暗号では、二つの異なる素数を秘密鍵、その積が公開鍵と結びつくような仕組みを作り、暗号化と復号を行うことで、鍵の安全性を保っています。ちなみに、現在RSA暗号の秘密鍵として実用されている数は、ゆうに300桁以上です。 
+
+なお、公開鍵暗号方式は、2つの鍵を使って暗号化するため、処理が遅くなってしまう欠点があります。なので、音声や映像などの、次々に送られてくるデータを高速で暗号化しなくてはならない場面では、共通鍵暗号方式で暗号化することが多いです。 
+
+ 
+
+●AES暗号について 
+
+　AES暗号は、暗号の一つです。2000年に開発され、無線LAN通信などに用いられています。AES暗号は共通鍵暗号方式を採用しています。なので、RSA暗号は公開鍵暗号方式の標準、AES暗号は共通鍵暗号方式の標準というように差別化されています。 
+
+　AES暗号の特徴は、4つの段階によるラウンドを何度も繰り返すことによって、平文を混ぜ合わせることです。それらの段階は、平文の順列をずらしたり、表に従って置き換えたり、鍵と平文を混ぜ合わせたりすることで、平文と暗号文との結びつきを弱めています。こうした動作を何度も繰り返し、平文を推測されないようにするのです。 
+ 
     """)
-
-# セッション状態の初期化
-if 'rsa_keys' not in st.session_state: st.session_state['rsa_keys'] = None
-if 'aes_key' not in st.session_state: st.session_state['aes_key'] = None
-if 'rsa_cipher' not in st.session_state: st.session_state['rsa_cipher'] = None
-if 'aes_cipher' not in st.session_state: st.session_state['aes_cipher'] = None
-
-# 【A. サイドバーの実装】設定項目をサイドバーへ移動
-with st.sidebar:
-    st.header("⚙️ Settings (設定)")
     
-    st.subheader("🔑 RSA Settings")
-    rsa_bits = st.selectbox("RSA Key Size (Bits)", [512, 1024, 2048], index=1, help="鍵長が大きいほど安全ですが、生成と暗号化に時間がかかります。")
-    
-    # 【D. ステータス表示の強化】鍵生成ボタンとステータス表示
-    if st.button("Generate RSA Keys (鍵生成)"):
-        # st.statusを使って処理状況を可視化
-        with st.status("RSA鍵ペアを生成中...", expanded=True) as status:
-            start_time = time.time()
-            
-            # ステータス更新用のコールバック関数
-            def update_status(msg):
-                st.write(f"🔄 {msg}")
-                time.sleep(0.1) # 視覚的にわかりやすくするためのウェイト
-            
-            # 鍵生成実行
-            st.session_state['rsa_keys'] = generate_rsa_keypair_steps(rsa_bits, update_status)
-            
-            elapsed = time.time() - start_time
-            status.update(label=f"鍵生成完了! ({elapsed:.3f}秒)", state="complete", expanded=False)
-
-    st.divider()
-
-    st.subheader("🛡️ AES Settings")
-    aes_bits = st.selectbox("AES Key Size (Bits)", [128, 192, 256], index=0)
-    
-    col_k1, col_k2 = st.columns([3, 1])
-    with col_k1:
-        # 現在のAES鍵を表示・入力
-        current_aes_hex = st.session_state['aes_key'].hex() if st.session_state['aes_key'] else ""
-        key_input = st.text_input("AES Key (Hex)", value=current_aes_hex)
-    with col_k2:
-        st.write("")
-        st.write("")
-        if st.button("🎲", help="ランダムな鍵を生成"):
-            st.session_state['aes_key'] = secrets.token_bytes(aes_bits // 8)
-            st.rerun()
-
-    # 鍵入力のバリデーション
-    if key_input and key_input != current_aes_hex:
-        try:
-            b_key = bytes.fromhex(key_input)
-            if len(b_key) != aes_bits // 8:
-                st.error(f"長さ不一致: {len(b_key)}バイト (必要: {aes_bits//8}バイト)")
-            else:
-                st.session_state['aes_key'] = b_key
-        except:
-            st.error("無効なHex文字列")
-
+st.markdown("""
+Pythonのみでゼロから実装した **RSA** と **AES** 暗号アルゴリズムのデモアプリです。
+内部の数学的処理やビット操作をコードで完全に再現しています。
+""")
 
 tab_rsa, tab_aes = st.tabs(["🔑 RSA (公開鍵暗号)", "🛡️ AES (共通鍵暗号)"])
 
 # --- RSA タブ ---
 with tab_rsa:
-    st.subheader("RSA Encryption / Decryption")
+    st.header("RSA Encryption")
+    st.info("素因数分解の困難性を利用した公開鍵暗号方式です。")
     
-    # 鍵情報の表示とダウンロード
+    # セッション状態の初期化
+    if 'rsa_keys' not in st.session_state:
+        st.session_state['rsa_keys'] = None
+
+    # 設定と鍵生成
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        bits = st.selectbox("鍵のビット長 (大きいほど安全ですが遅くなります)", [512, 1024, 2048], index=1)
+    with col2:
+        st.write("") # スペース調整
+        st.write("") 
+        if st.button("鍵ペアを生成"):
+            with st.spinner('巨大な素数を探索中...'):
+                start_time = time.time()
+                st.session_state['rsa_keys'] = generate_rsa_keypair(bits)
+                elapsed = time.time() - start_time
+            st.success(f"鍵生成完了 ({elapsed:.3f}秒)")
+
+    # 鍵の表示
     if st.session_state['rsa_keys']:
         pub, priv = st.session_state['rsa_keys']
         e, n = pub
         d, _ = priv
         
-        with st.expander("現在の鍵情報 (Public & Private Keys)"):
-            st.code(f"Public Key (e, n):\ne = {e}\nn = {n}")
-            st.code(f"Private Key (d, n):\nd = {d}\nn = {n}")
-            
-            # 【C. ダウンロード機能】鍵のダウンロード
-            key_info_txt = f"RSA {rsa_bits} bit Keys\n\n[Public Key]\ne={e}\nn={n}\n\n[Private Key]\nd={d}\nn={n}"
-            st.download_button("鍵情報をダウンロード (.txt)", key_info_txt, file_name="rsa_keys.txt")
-    else:
-        st.info("👈 サイドバーの「Generate RSA Keys」ボタンを押して鍵を作ってください。")
+        with st.expander("生成された鍵の詳細を見る", expanded=True):
+            st.markdown(f"**Public Key (e, n):**")
+            st.code(f"e = {e}\nn = {n}")
+            st.markdown(f"**Private Key (d, n):**")
+            st.code(f"d = {d}\nn = {n}")
 
-    st.divider()
-
-    # 【B. 2カラムレイアウトの徹底】
-    col_enc, col_dec = st.columns(2, gap="large")
-
-    # --- 左カラム：暗号化 ---
-    with col_enc:
-        st.markdown("#### 1. Encrypt (暗号化)")
-        rsa_msg = st.text_area("Plaintext (平文)", "Hello, RSA World!", height=150)
+        # 暗号化・復号エリア
+        st.divider()
+        rsa_msg = st.text_input("暗号化したいメッセージ (RSA)", "Hello, RSA World!")
         
-        if st.button("🔒 暗号化を実行"):
-            if not st.session_state['rsa_keys']:
-                st.error("鍵がありません。サイドバーで生成してください。")
-            elif not rsa_msg:
-                st.warning("メッセージを入力してください")
-            else:
-                try:
-                    with st.spinner("暗号化計算中..."):
-                        pub, _ = st.session_state['rsa_keys']
+        col_enc, col_dec = st.columns(2)
+        
+        with col_enc:
+            if st.button("暗号化 (Encrypt)"):
+                if not rsa_msg:
+                    st.warning("メッセージを入力してください")
+                else:
+                    try:
                         # 暗号化実行
                         encrypted_ints = rsa_encrypt(pub, rsa_msg)
+                        # 表示用にHEX文字列化
+                        hex_str = "".join([f"{x:x}" for x in encrypted_ints])
                         st.session_state['rsa_cipher'] = encrypted_ints
-                    st.success("暗号化成功！")
-                except ValueError as ve:
-                    st.error(f"エラー: {ve}")
+                        st.session_state['rsa_cipher_show'] = hex_str
+                    except ValueError as ve:
+                        st.error(f"エラー: {ve}")
 
-    # --- 右カラム：復号と結果表示 ---
-    with col_dec:
-        st.markdown("#### 2. Decrypt (復号 & 結果)")
-        
-        if st.session_state['rsa_cipher']:
-            # 暗号文のHex表示
-            cipher_hex = "".join([f"{x:x}" for x in st.session_state['rsa_cipher']])
-            st.text_area("Ciphertext (Hex)", cipher_hex, height=100, disabled=True)
-            
-            # 【C. ダウンロード機能】暗号文のダウンロード
-            st.download_button("暗号文をダウンロード (.txt)", cipher_hex, file_name="rsa_ciphertext.txt")
-            
-            st.write("🔽")
-            
-            if st.button("🔓 復号を実行"):
-                if not st.session_state['rsa_keys']:
-                    st.error("鍵がありません")
+        with col_dec:
+            if st.button("復号 (Decrypt)"):
+                if 'rsa_cipher' not in st.session_state:
+                    st.warning("先に暗号化してください")
                 else:
-                    _, priv = st.session_state['rsa_keys']
-                    with st.spinner("復号計算中..."):
-                        decrypted_text = rsa_decrypt(priv, st.session_state['rsa_cipher'])
-                    
+                    decrypted_text = rsa_decrypt(priv, st.session_state['rsa_cipher'])
                     if decrypted_text:
-                        st.success(f"復号結果:\n{decrypted_text}")
+                        st.session_state['rsa_decrypted'] = decrypted_text
                     else:
-                        st.error("復号失敗")
-        else:
-            st.info("暗号化を実行すると、ここに結果が表示されます。")
+                        st.error("復号に失敗しました（パディングエラーなど）")
+
+        # 結果表示
+        if 'rsa_cipher_show' in st.session_state:
+            st.text_area("暗号文 (16進数表現)", st.session_state['rsa_cipher_show'], height=100)
+        
+        if 'rsa_decrypted' in st.session_state:
+            st.success(f"復号された平文: {st.session_state['rsa_decrypted']}")
+
+    else:
+        st.warning("👈 まずは「鍵ペアを生成」ボタンを押してください。")
 
 # --- AES タブ ---
 with tab_aes:
-    st.subheader("AES Encryption / Decryption (ECB Mode)")
+    st.header("AES Encryption")
+    st.info("SPN構造を持つ、現在標準的な共通鍵暗号方式です。(ECBモードで動作)")
 
-    if not st.session_state['aes_key']:
-        st.info("👈 サイドバーでAES鍵を設定・生成してください。")
+    if 'aes_key' not in st.session_state:
+        st.session_state['aes_key'] = None
+
+    # 設定
+    aes_bits = st.selectbox("AES鍵長", [128, 192, 256])
     
-    st.divider()
+    col_a1, col_a2 = st.columns([3, 1])
+    with col_a1:
+        # 鍵の手動入力または生成表示
+        key_input = st.text_input("秘密鍵 (Hex) - 空欄で自動生成", value="" if not st.session_state['aes_key'] else st.session_state['aes_key'].hex())
+    with col_a2:
+        st.write("")
+        st.write("")
+        if st.button("ランダム鍵生成"):
+            new_key = secrets.token_bytes(aes_bits // 8)
+            st.session_state['aes_key'] = new_key
+            st.rerun()
 
-    # 【B. 2カラムレイアウトの徹底】
-    col_a_enc, col_a_dec = st.columns(2, gap="large")
-
-    aes = AES(aes_bits)
-
-    # --- 左カラム：暗号化 ---
-    with col_a_enc:
-        st.markdown("#### 1. Encrypt (暗号化)")
-        aes_msg = st.text_area("Plaintext (平文)", "Hello, AES World!", height=150, key="aes_input")
-        
-        if st.button("🔒 AES暗号化を実行"):
-            if not st.session_state['aes_key']:
-                st.error("鍵がセットされていません")
-            elif not aes_msg:
-                st.warning("メッセージを入力してください")
+    # 入力された鍵の処理
+    current_key_bytes = None
+    if key_input:
+        try:
+            current_key_bytes = bytes.fromhex(key_input)
+            # 長さチェック
+            if len(current_key_bytes) != aes_bits // 8:
+                st.error(f"鍵の長さが正しくありません。{aes_bits}ビット({aes_bits//8}バイト)必要ですが、{len(current_key_bytes)}バイトです。")
+                current_key_bytes = None
             else:
-                try:
+                st.session_state['aes_key'] = current_key_bytes
+        except:
+            st.error("有効な16進数ではありません")
+
+    if st.session_state['aes_key']:
+        st.success(f"現在の鍵: {st.session_state['aes_key'].hex()}")
+        
+        st.divider()
+        aes_msg = st.text_input("暗号化したいメッセージ (AES)", "Hello, AES World!")
+
+        col_aes_enc, col_aes_dec = st.columns(2)
+        
+        # AES インスタンス化
+        aes = AES(aes_bits)
+        
+        with col_aes_enc:
+            if st.button("AES 暗号化"):
+                if not aes_msg:
+                    st.warning("メッセージを入力してください")
+                else:
                     # 鍵スケジュール
                     expanded_key = aes.key_expansion(st.session_state['aes_key'])
-                    # パディング & 暗号化
+                    # パディング
                     raw_bytes = aes_msg.encode('utf-8')
                     padded = pkcs7_pad(raw_bytes)
-                    
+                    # 暗号化 (ECB)
                     out = bytearray()
                     for i in range(0, len(padded), 16):
                         block = list(padded[i:i+16])
@@ -494,39 +511,33 @@ with tab_aes:
                         out.extend(bytes(enc_block))
                     
                     st.session_state['aes_cipher'] = bytes(out)
-                    st.success("暗号化成功！")
-                except Exception as e:
-                    st.error(f"エラー: {e}")
 
-    # --- 右カラム：復号と結果表示 ---
-    with col_a_dec:
-        st.markdown("#### 2. Decrypt (復号 & 結果)")
-        
-        if st.session_state['aes_cipher']:
-            cipher_bytes = st.session_state['aes_cipher']
-            st.text_area("Ciphertext (Hex)", cipher_bytes.hex(), height=100, disabled=True)
-            
-            # 【C. ダウンロード機能】暗号文(Hex)のダウンロード
-            st.download_button("暗号文をダウンロード (.txt)", cipher_bytes.hex(), file_name="aes_ciphertext.txt")
-
-            st.write("🔽")
-
-            if st.button("🔓 AES復号を実行"):
-                if not st.session_state['aes_key']:
-                    st.error("鍵がありません")
+        with col_aes_dec:
+            if st.button("AES 復号"):
+                if 'aes_cipher' not in st.session_state:
+                    st.warning("先に暗号化してください")
                 else:
+                    expanded_key = aes.key_expansion(st.session_state['aes_key'])
+                    cipher_data = st.session_state['aes_cipher']
+                    
+                    out = bytearray()
+                    for i in range(0, len(cipher_data), 16):
+                        block = list(cipher_data[i:i+16])
+                        dec_block = aes.decrypt_block(block, expanded_key)
+                        out.extend(bytes(dec_block))
+                    
                     try:
-                        expanded_key = aes.key_expansion(st.session_state['aes_key'])
-                        out = bytearray()
-                        for i in range(0, len(cipher_bytes), 16):
-                            block = list(cipher_bytes[i:i+16])
-                            dec_block = aes.decrypt_block(block, expanded_key)
-                            out.extend(bytes(dec_block))
-                        
                         unpadded = pkcs7_unpad(out)
-                        dec_str = unpadded.decode('utf-8')
-                        st.success(f"復号結果:\n{dec_str}")
+                        st.session_state['aes_decrypted'] = unpadded.decode('utf-8')
                     except Exception as e:
-                        st.error(f"復号失敗: {e}")
-        else:
-            st.info("暗号化を実行すると、ここに結果が表示されます。")
+                        st.error(f"復号/パディング除去エラー: {e}")
+
+        # 結果表示
+        if 'aes_cipher' in st.session_state:
+            st.markdown("**暗号文 (Hex):**")
+            st.code(st.session_state['aes_cipher'].hex(), language="text")
+        
+        if 'aes_decrypted' in st.session_state:
+             st.success(f"復号された平文: {st.session_state['aes_decrypted']}")
+
+
