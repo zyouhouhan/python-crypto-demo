@@ -369,7 +369,7 @@ Wkhuh zdv d wdeoh vhw rxw xqghu d wuhh lq iurqw ri wkh krxvh dqg wkh pdufk kduh 
 
  """)
     
-    st.image("aes_mechanism.png", caption="図解：AES暗号の仕組み（4つの変換工程）", use_container_width=True)
+    st.image("aes_description.jpg", caption="図解：AES暗号の仕組み（4つの変換工程）", use_container_width=True)
     
 st.markdown("""
 Pythonのみでゼロから実装した **RSA** と **AES** 暗号アルゴリズムのデモアプリです。
@@ -549,6 +549,7 @@ with tab_aes:
         
         if 'aes_decrypted' in st.session_state:
              st.success(f"復号された平文: {st.session_state['aes_decrypted']}")
+
 
 
 
