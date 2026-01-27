@@ -310,8 +310,8 @@ with st.expander("ℹ️ 暗号技術の詳しい解説を読む（クリック�
 　暗号とは、発信者と受信者以外の誰にも知られないように情報を受け渡すための技術です。 
 
 　シーザー暗号を例に挙げましょう。紀元前1世紀ごろにローマ帝国を支配したジュリアス・シーザーが使用したことからこの名前がつけられています。この暗号の仕組みはとても単純です。アルファベットの文章において、その各文字をアルファベット順に何文字かずらすのです。 """)
-    
-        st.image("caesar_diagram.png", caption="シーザー暗号の仕組み（例：3文字ずらし）", use_container_width=True)
+
+    st.image("caesar_diagram.png", caption="シーザー暗号の仕組み（例：3文字ずらし）", use_container_width=True)
     
      st.markdown("""
 
@@ -545,6 +545,7 @@ with tab_aes:
         
         if 'aes_decrypted' in st.session_state:
              st.success(f"復号された平文: {st.session_state['aes_decrypted']}")
+
 
 
 
