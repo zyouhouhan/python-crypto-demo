@@ -301,9 +301,6 @@ def pkcs7_unpad(data: bytes) -> bytes:
 
 st.set_page_config(page_title="Classic Crypto Demo", page_icon="🔐", layout="centered")
 
-with st.sidebar:
-    st.image("icon.jpeg", width=150)
-
 st.title("🔐 Pure Python Crypto Demo")
 
 with st.expander("ℹ️ 暗号技術の詳しい解説を読む（クリックして展開）"):
@@ -542,6 +539,7 @@ with tab_aes:
         
         if 'aes_decrypted' in st.session_state:
              st.success(f"復号された平文: {st.session_state['aes_decrypted']}")
+
 
 
 
