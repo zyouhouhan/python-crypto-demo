@@ -357,6 +357,8 @@ Wkhuh zdv d wdeoh vhw rxw xqghu d wuhh lq iurqw ri wkh krxvh dqg wkh pdufk kduh 
 
 なお、公開鍵暗号方式は、2つの鍵を使って暗号化するため、処理が遅くなってしまう欠点があります。なので、音声や映像などの、次々に送られてくるデータを高速で暗号化しなくてはならない場面では、共通鍵暗号方式で暗号化することが多いです。 
 
+    st.image("rsa_description.jpg", caption="図解：RSA暗号における公開鍵と秘密鍵の役割", use_container_width=True)
+
  
 
 ●AES暗号について 
@@ -545,6 +547,7 @@ with tab_aes:
         
         if 'aes_decrypted' in st.session_state:
              st.success(f"復号された平文: {st.session_state['aes_decrypted']}")
+
 
 
 
