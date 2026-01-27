@@ -311,9 +311,9 @@ with st.expander("ℹ️ 暗号技術の詳しい解説を読む（クリック�
 
 　シーザー暗号を例に挙げましょう。紀元前1世紀ごろにローマ帝国を支配したジュリアス・シーザーが使用したことからこの名前がつけられています。この暗号の仕組みはとても単純です。アルファベットの文章において、その各文字をアルファベット順に何文字かずらすのです。 """)
     
-        　st.image("caesar_diagram.png", caption="シーザー暗号の仕組み（例：3文字ずらし）", use_container_width=True)
+     st.image("caesar_diagram.png", caption="シーザー暗号の仕組み（例：3文字ずらし）", use_container_width=True)
     
-        　st.markdown("""
+     st.markdown("""
 
 このような文章をシーザー暗号を用いて暗号化するとしましょう。3文字ずらすことにします。 
 
@@ -339,9 +339,9 @@ Wkhuh zdv d wdeoh vhw rxw xqghu d wuhh lq iurqw ri wkh krxvh dqg wkh pdufk kduh 
 
 こうしてみると、暗号を実用的なものにするためには、①鍵を絶対に第三者にバレないようにすること、②暗号文から平文を推測されないようにすること、という二つの条件が必要であることがわかります。 """)
 
-    st.image("caesar_vulnerability.jpg", caption="図解：暗号の脆弱性と対策", use_container_width=True)
+           st.image("caesar_vulnerability.jpg", caption="図解：暗号の脆弱性と対策", use_container_width=True)
 
-    st.markdown("""
+        st.markdown("""
    
    ●RSA暗号について 
 
@@ -545,6 +545,7 @@ with tab_aes:
         
         if 'aes_decrypted' in st.session_state:
              st.success(f"復号された平文: {st.session_state['aes_decrypted']}")
+
 
 
 
