@@ -339,11 +339,9 @@ Wkhuh zdv d wdeoh vhw rxw xqghu d wuhh lq iurqw ri wkh krxvh dqg wkh pdufk kduh 
 
 こうしてみると、暗号を実用的なものにするためには、①鍵を絶対に第三者にバレないようにすること、②暗号文から平文を推測されないようにすること、という二つの条件が必要であることがわかります。 """)
 
+st.image("caesar_vulnerability.jpg", caption="図解：暗号の脆弱性と対策", use_container_width=True)
 
-
- 
-
-●RSA暗号について 
+   st.markdown("""●RSA暗号について 
 
 　RSA暗号は、暗号の一つです。1977年に開発され、現在に至るまでインターネット通信の暗号化など広く用いられています。この暗号の特徴は、公開鍵暗号方式というシステムを採用したことです。 
 
@@ -545,6 +543,7 @@ with tab_aes:
         
         if 'aes_decrypted' in st.session_state:
              st.success(f"復号された平文: {st.session_state['aes_decrypted']}")
+
 
 
 
