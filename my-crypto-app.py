@@ -366,8 +366,10 @@ Wkhuh zdv d wdeoh vhw rxw xqghu d wuhh lq iurqw ri wkh krxvh dqg wkh pdufk kduh 
 　AES暗号は、暗号の一つです。2000年に開発され、無線LAN通信などに用いられています。AES暗号は共通鍵暗号方式を採用しています。なので、RSA暗号は公開鍵暗号方式の標準、AES暗号は共通鍵暗号方式の標準というように差別化されています。 
 
 　AES暗号の特徴は、4つの段階によるラウンドを何度も繰り返すことによって、平文を混ぜ合わせることです。それらの段階は、平文の順列をずらしたり、表に従って置き換えたり、鍵と平文を混ぜ合わせたりすることで、平文と暗号文との結びつきを弱めています。こうした動作を何度も繰り返し、平文を推測されないようにするのです。 
- 
-    """)
+
+ """)
+    
+    st.image("aes_mechanism.png", caption="図解：AES暗号の仕組み（4つの変換工程）", use_container_width=True)
     
 st.markdown("""
 Pythonのみでゼロから実装した **RSA** と **AES** 暗号アルゴリズムのデモアプリです。
@@ -547,6 +549,7 @@ with tab_aes:
         
         if 'aes_decrypted' in st.session_state:
              st.success(f"復号された平文: {st.session_state['aes_decrypted']}")
+
 
 
 
