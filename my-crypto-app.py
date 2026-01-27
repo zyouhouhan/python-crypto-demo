@@ -341,7 +341,7 @@ Wkhuh zdv d wdeoh vhw rxw xqghu d wuhh lq iurqw ri wkh krxvh dqg wkh pdufk kduh 
 
 st.image("caesar_vulnerability.jpg", caption="図解：暗号の脆弱性と対策", use_container_width=True)
 
-   st.markdown("""
+st.markdown("""
    
    ●RSA暗号について 
 
@@ -545,6 +545,7 @@ with tab_aes:
         
         if 'aes_decrypted' in st.session_state:
              st.success(f"復号された平文: {st.session_state['aes_decrypted']}")
+
 
 
 
