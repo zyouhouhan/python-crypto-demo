@@ -725,3 +725,4 @@ with tab_attack:
                 st.error(f"攻撃失敗: {result['reason']}")
 
 
+
