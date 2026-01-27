@@ -111,7 +111,7 @@ def rsa_decrypt(pk, ciphertext_blocks):
             return None
     return b''.join(decrypted_blocks).decode('utf-8', errors='ignore')
 	
- def rsa_elapsedtime(pk, ciphertext_blocks):
+def rsa_elapsedtime(pk, ciphertext_blocks):
     # 暗号化時間の計測
 	encrypt_start = time.time()
 	encrypted = encrypt(public, message)
@@ -723,6 +723,7 @@ with tab_attack:
                     st.error("❌ 特定したdは間違っています。")
             else:
                 st.error(f"攻撃失敗: {result['reason']}")
+
 
 
 
