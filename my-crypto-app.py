@@ -313,7 +313,7 @@ with st.expander("ℹ️ 暗号技術の詳しい解説を読む（クリック�
 
     st.image("caesar_diagram.png", caption="シーザー暗号の仕組み（例：3文字ずらし）", use_container_width=True)
     
-     st.markdown("""
+    st.markdown("""
 
 このような文章をシーザー暗号を用いて暗号化するとしましょう。3文字ずらすことにします。 
 
@@ -545,6 +545,7 @@ with tab_aes:
         
         if 'aes_decrypted' in st.session_state:
              st.success(f"復号された平文: {st.session_state['aes_decrypted']}")
+
 
 
 
