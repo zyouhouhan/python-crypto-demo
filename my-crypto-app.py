@@ -586,7 +586,7 @@ if st.session_state.page == "RSA":
 #AES
 #============
 
-    elif st.session_state['current_page'] == "AES":
+elif st.session_state['current_page'] == "AES":
     # --- AES タブ ---
 
     st.header("AES Encryption")
@@ -759,6 +759,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"暗号化/復号時間: **{gen_t + enc_t + dec_t:.2f} ミリ秒**") 
+
 
 
 
