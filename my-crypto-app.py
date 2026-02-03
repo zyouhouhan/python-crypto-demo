@@ -518,7 +518,8 @@ if st.session_state['current_page'] == "RSA":
 # ページ内を2つのタブに分割
     tab1, tab2 = st.tabs(["🏗️ 鍵ペアの生成", "📧 メッセージ暗号化・復号"])
     with tab1:
-    if 'rsa_keys' not in st.session_state:
+        st.subheader("ステップ 1: 鍵ペアを作成する")
+        if 'rsa_keys' not in st.session_state:
         st.session_state['rsa_keys'] = None
 
     col1, col2 = st.columns([2, 1])
@@ -545,6 +546,7 @@ if st.session_state['current_page'] == "RSA":
             st.markdown(f"**Private Key (d, n):**")
             st.code(f"d = {d}\nn = {n}")
     with tab2:
+        st.subheader("ステップ 2: 暗号化を試す")
         st.divider()
         rsa_msg = st.text_input("暗号化したいメッセージ (RSA)", "Hello, RSA World!")
 
@@ -690,6 +692,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+
 
 
 
