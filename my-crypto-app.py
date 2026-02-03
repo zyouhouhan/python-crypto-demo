@@ -573,7 +573,7 @@ if st.session_state['current_page'] == "RSA":
         if 'rsa_decrypted' in st.session_state:
             st.success(f"復号された平文: {st.session_state['rsa_decrypted']}")
         else:
-        st.warning("鍵のビット長を選択し、鍵ペアを生成してください。")
+            st.warning("鍵のビット長を選択し、鍵ペアを生成してください。")
         
 #===================
 # --- AES ページ ---
@@ -692,6 +692,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+
 
 
 
