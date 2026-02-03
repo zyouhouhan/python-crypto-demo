@@ -677,7 +677,6 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
-            result = attack_from_public_key(e, n)
             
 #===========================
 # --- 処理時間計測 ページ ---
@@ -696,6 +695,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+
 
 
 
