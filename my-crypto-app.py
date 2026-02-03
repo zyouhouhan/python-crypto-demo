@@ -488,11 +488,36 @@ Pythonのみでゼロから実装した **RSA** と **AES** 暗号アルゴリ�
 内部の数学的処理やビット操作をコードで完全に再現しています。
 """)
 
-# タブを3つ作成
-tab_rsa, tab_aes, tab_attack = st.tabs(["🔑 RSA (公開鍵暗号)", "🛡️ AES (共通鍵暗号)", "💥 脆弱性デモ"])
+#======================
+#スライド風タブメニュー
+#======================
 
-# --- RSA タブ ---
-tab_rsa, tab_time = st.tabs(["🔐 RSA暗号化", "⏱ 処理時間"])
+# 1. ページ状態の管理（どの画面を開いているか記憶させる）
+if 'current_page' not in st.session_state:
+    st.session_state['current_page'] = "RSA"
+
+# 2. サイドバーを「ナビゲーションメニュー」にする
+with st.sidebar:
+    st.title("Crypto Dashboard")
+    st.markdown("---")
+    
+    # ボタンを並べてメニューにする
+    if st.button("🔑 RSA (公開鍵暗号)", use_container_width=True):
+        st.session_state['current_page'] = "RSA"
+    if st.button("🛡️ AES (共通鍵暗号)", use_container_width=True):
+        st.session_state['current_page'] = "AES"
+    if st.button("💥 脆弱性デモ", use_container_width=True):
+        st.session_state['current_page'] = "Demo"
+    if st.button("⏱ 処理時間計測", use_container_width=True):
+        st.session_state['current_page'] = "Time"
+        
+#==========
+#RSA
+#==========
+
+if st.session_state['current_page'] == "RSA":
+    # --- RSA タブ ---
+    
 with tab_rsa:
     st.header("RSA Encryption")
     st.info("素因数分解の困難性を利用した公開鍵暗号方式です。")
@@ -555,28 +580,15 @@ with tab_rsa:
 
     else:
         st.warning("👈 まずは「鍵ペアを生成」ボタンを押してください。")
+    st.header("🔑 RSA Encryption")
+   if st.session_state.page == "RSA":
 
-# --- 処理時間タブ ---
+#============
+#AES
+#============
 
-with tab_time:
-    st.subheader("⏱ イベント別計測結果")
-    
-    # セッションから取得（安全な方法）
-    g_time = st.session_state.get('rsa_gen_time', 0.0)
-    e_time = st.session_state.get('rsa_enc_time', 0.0)
-    d_time = st.session_state.get('rsa_dec_time', 0.0)
-
-    c1, c2, c3 = st.columns(3)
-    c1.metric("鍵生成", f"{g_time:.2f} ms")
-    c2.metric("暗号化", f"{e_time:.2f} ms")
-    c3.metric("復号", f"{d_time:.2f} ms")
-
-    total_time = g_time + e_time + d_time
-    st.divider()
-    st.info(f"全ての工程にかかった合計時間: **{total_time:.2f} ミリ秒**")
-
-
-# --- AES タブ ---
+elif st.session_state['current_page'] == "AES":
+    # --- AES タブ ---
 with tab_aes:
     st.header("AES Encryption")
     st.info("SPN構造を持つ、現在標準的な共通鍵暗号方式です。(ECBモードで動作)")
@@ -658,7 +670,15 @@ with tab_aes:
         if 'aes_decrypted' in st.session_state:
              st.success(f"復号された平文: {st.session_state['aes_decrypted']}")
 
-# --- 脆弱性デモ タブ (NEW) ---
+    st.header("🛡️ AES Encryption")
+    if st.session_state.page == "AES":
+
+#============
+#脆弱性デモ
+#============
+        
+elif st.session_state['current_page'] == "Demo":
+    # --- 脆弱性デモ タブ (NEW) ---
 with tab_attack:
     st.header("💥 RSA完全攻撃デモ")
     st.warning("⚠️ 公開鍵から秘密鍵を特定する実験です。鍵長が大きすぎるとフリーズします！")
@@ -718,10 +738,28 @@ with tab_attack:
             else:
                 st.error(f"攻撃失敗: {result['reason']}")
 
+    st.header("💥 Vulnerability Demo")
+    if st.session_state.page == "attack":
 
+#============
+#処理時間
+#============
+        
+elif st.session_state['current_page'] == "Time":
+    # --- 処理時間表示（ここにご希望の計測結果を表示） ---
+    st.header("⏱ イベント別計測結果")
+    
+    gen_t = st.session_state.get('rsa_gen_time', 0.0)
+    enc_t = st.session_state.get('rsa_enc_time', 0.0)
+    dec_t = st.session_state.get('rsa_dec_time', 0.0)
 
+    c1, c2, c3 = st.columns(3)
+    c1.metric("鍵生成", f"{gen_t:.2f} ms")
+    c2.metric("暗号化", f"{enc_t:.2f} ms")
+    c3.metric("復号", f"{dec_t:.2f} ms")
 
-
+    st.divider()
+    st.info(f"暗号化/復号時間: **{gen_t + enc_t + dec_t:.2f} ミリ秒**") 
 
 
 
