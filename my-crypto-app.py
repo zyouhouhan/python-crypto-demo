@@ -557,22 +557,20 @@ with tab_rsa:
 
         if 'rsa_decrypted' in st.session_state:
             st.success(f"復号された平文: {st.session_state['rsa_decrypted']}")
-            
-        with tab_time:
-        st.subheader("イベント別計測結果")
-        # ここで計測した値を表示
-        c1, c2 = st.columns(2)
-        c1.metric("暗号化", f"{enc_time:.2f} ms")
-        c2.metric("復号", f"{dec_time:.2f} ms")
-
-        # 合計時間の表示
-        total_time = gen_time + enc_time + dec_time
-        st.divider()
-        st.info(f"全ての工程にかかった合計時間: **{total_time:.2f} ミリ秒**")
-
 
     else:
         st.warning("👈 まずは「鍵ペアを生成」ボタンを押してください。")
+with tab_time:
+    st.subheader("イベント別計測結果")
+     # ここで計測した値を表示
+     c1, c2 = st.columns(2)
+     c1.metric("暗号化", f"{enc_time:.2f} ms")
+     c2.metric("復号", f"{dec_time:.2f} ms")
+
+    # 合計時間の表示
+    total_time = gen_time + enc_time + dec_time
+    st.divider()
+    st.info(f"全ての工程にかかった合計時間: **{total_time:.2f} ミリ秒**")
 
 # --- AES タブ ---
 with tab_aes:
@@ -715,6 +713,7 @@ with tab_attack:
                     st.error("❌ 特定したdは間違っています。")
             else:
                 st.error(f"攻撃失敗: {result['reason']}")
+
 
 
 
