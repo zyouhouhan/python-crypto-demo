@@ -515,7 +515,10 @@ with st.sidebar:
 # 3. メインコンテンツの表示切り替え
 # ==========================================
 
+#===================
 # --- RSA ページ ---
+#===================
+
 if st.session_state['current_page'] == "RSA":
     st.header("🔑 RSA Encryption")
     st.info("素因数分解の困難性を利用した公開鍵暗号方式です。")
@@ -574,8 +577,11 @@ if st.session_state['current_page'] == "RSA":
             st.success(f"復号された平文: {st.session_state['rsa_decrypted']}")
     else:
         st.warning("鍵のビット長を選択し、鍵ペアを生成してください。")
-
+        
+#===================
 # --- AES ページ ---
+#===================
+
 elif st.session_state['current_page'] == "AES":
     st.header("🛡️ AES Encryption")
     st.info("SPN構造を持つ、現在標準的な共通鍵暗号方式です。")
@@ -631,7 +637,10 @@ elif st.session_state['current_page'] == "AES":
         if 'aes_decrypted' in st.session_state:
             st.success(f"復号結果: {st.session_state['aes_decrypted']}")
 
+#=========================
 # --- 脆弱性デモ ページ ---
+#=========================
+
 elif st.session_state['current_page'] == "Demo":
     st.header("💥 RSA完全攻撃デモ")
     st.warning("⚠️ 公開鍵から秘密鍵を特定する実験です。")
@@ -648,13 +657,42 @@ elif st.session_state['current_page'] == "Demo":
         wk = st.session_state['weak_keys']
         e, n = wk['pub']
         st.info(f"公開鍵: e={e}, n={n}")
+        #==プログレスバー==#
         if st.button("攻撃開始 (Attack!)", type="primary"):
+            # 1. プログレスバーとステータステキストの準備
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+            
+            # 2. 解析演出（0%から100%までループ）
+            for percent_complete in range(100):
+                # 0.02秒待機（ここを調整するとバーの速度が変わります）
+                time.sleep(0.02)
+                
+                # バーを更新
+                progress_bar.progress(percent_complete + 1)
+                
+                # 演出用のテキストを表示
+                status_text.text(f"ハッキング実行中... {percent_complete + 1}%")
+            
+            # 3. 実際の解析処理を実行
             result = attack_from_public_key(e, n)
+            
+            # 4. 演出が終わったらバーとテキストを消す
+            progress_bar.empty()
+            status_text.empty()
+            
+            # 5. 結果を表示
             if result["success"]:
-                st.success(f"解読成功！ 秘密鍵 d = {result['d']}")
+                st.success(f"🎉 解読成功！ 秘密鍵 d = {result['d']}")
                 st.balloons()
-
+            else:
+                st.error("攻撃に失敗しました。")
+            result = attack_from_public_key(e, n)
+            
+#===========================
 # --- 処理時間計測 ページ ---
+#===========================
+
 elif st.session_state['current_page'] == "Time":
     st.header("⏱ イベント別計測結果")
     g_t = st.session_state.get('rsa_gen_time', 0.0)
@@ -668,6 +706,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+
 
 
 
