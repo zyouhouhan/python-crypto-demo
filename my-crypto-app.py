@@ -118,20 +118,20 @@ def rsa_elapsedtime(pk, ciphertext_blocks):
 	encrypt_end = time.time()
 	encrypt_time = (encrypt_end - encrypt_start) * 1000  # ミリ秒に変換
 	encrypted_hex = [hex(c) for c in encrypted]
-	print(f"暗号文（{len(encrypted)}ブロック）: {encrypted_hex[:3]}{'...' if len(encrypted_hex) > 3 else ''}")
-	print(f"暗号化にかかった時間: {encrypt_time:.3f} ミリ秒")
+	st.write(f"暗号文（{len(encrypted)}ブロック）: {encrypted_hex[:3]}{'...' if len(encrypted_hex) > 3 else ''}")
+	st.write(f"暗号化にかかった時間: {encrypt_time:.3f} ミリ秒")
 	
 	# 復号時間の計測
 	decrypt_start = time.time()
 	decrypted = decrypt(private, encrypted)
 	decrypt_end = time.time()
 	decrypt_time = (decrypt_end - decrypt_start) * 1000  # ミリ秒に変換
-	print(f"復号結果: {decrypted}")
-	print(f"復号にかかった時間: {decrypt_time:.3f} ミリ秒")
+	st.write(f"復号結果: {decrypted}")
+	st.write(f"復号にかかった時間: {decrypt_time:.3f} ミリ秒")
 	
 	time_end = time.time()
 	total_time = (time_end - time_start) * 1000  # ミリ秒に変換
-	print(f"処理全体にかかった時間: {total_time:.3f} ミリ秒")
+	st.wrtie(f"処理全体にかかった時間: {total_time:.3f} ミリ秒")
 
 # AESの実装
 SBOX = [
@@ -723,6 +723,7 @@ with tab_attack:
                     st.error("❌ 特定したdは間違っています。")
             else:
                 st.error(f"攻撃失敗: {result['reason']}")
+
 
 
 
