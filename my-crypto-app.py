@@ -659,28 +659,18 @@ elif st.session_state['current_page'] == "Demo":
         st.info(f"公開鍵: e={e}, n={n}")
         #==プログレスバー==#
         if st.button("攻撃開始 (Attack!)", type="primary"):
-            # 1. プログレスバーとステータステキストの準備
-            progress_bar = st.progress(0)
-            status_text = st.empty()
+            status_area = st.empty()
             
-            # 2. 解析演出（0%から100%までループ）
-            for percent_complete in range(100):
-                # 0.02秒待機（ここを調整するとバーの速度が変わります）
-                time.sleep(0.02)
-                
-                # バーを更新
-                progress_bar.progress(percent_complete + 1)
-                
-                # 演出用のテキストを表示
-                status_text.text(f"ハッキング実行中... {percent_complete + 1}%")
+            # 1. 探索開始のメッセージを表示
+            status_area.warning("🔍 秘密鍵を探索中... (素因数分解を実行中)")
             
-            # 3. 実際の解析処理を実行
+            # 2. 純粋な計算時間を測る
+            start_time = time.time()
             result = attack_from_public_key(e, n)
+            total_ms = (time.time() - start_time) * 1000
             
-            # 4. 演出が終わったらバーとテキストを消す
-            progress_bar.empty()
-            status_text.empty()
-            
+            # 3. 計算が終わったらメッセージを消す
+            status_area.empty()
             # 5. 結果を表示
             if result["success"]:
                 st.success(f"🎉 解読成功！ 秘密鍵 d = {result['d']}")
@@ -706,6 +696,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+
 
 
 
