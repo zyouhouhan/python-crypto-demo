@@ -509,8 +509,9 @@ with tab_rsa:
             with st.spinner('巨大な素数を探索中...'):
                 start_time = time.time()
                 st.session_state['rsa_keys'] = generate_rsa_keypair(bits)
-                elapsed = time.time() - start_time
-            st.success(f"鍵生成完了 ({elapsed:.3f}秒)")
+                g_elapsed = (time.time() - start_time) * 1000
+                st.session_state['rsa_gen_time'] = g_elapsed
+            st.success(f"鍵生成完了 ({g_elapsed/1000:.3f}秒)")
 
     if st.session_state['rsa_keys']:
         pub, priv = st.session_state['rsa_keys']
@@ -530,27 +531,20 @@ with tab_rsa:
 
         with col_enc:
             if st.button("暗号化 (Encrypt)"):
-                if not rsa_msg:
-                    st.warning("メッセージを入力してください")
-                else:
-                    try:
-                        encrypted_ints = rsa_encrypt(pub, rsa_msg)
-                        hex_str = "".join([f"{x:x}" for x in encrypted_ints])
-                        st.session_state['rsa_cipher'] = encrypted_ints
-                        st.session_state['rsa_cipher_show'] = hex_str
-                    except ValueError as ve:
-                        st.error(f"エラー: {ve}")
+                if rsa_msg:
+                    start_time = time.time()
+                    encrypted_ints = rsa_encrypt(pub, rsa_msg)
+                    st.session_state['rsa_enc_time'] = (time.time() - start_time) * 1000
+                    st.session_state['rsa_cipher'] = encrypted_ints
+                    st.session_state['rsa_cipher_show'] = "".join([f"{x:x}" for x in encrypted_ints])
 
         with col_dec:
             if st.button("復号 (Decrypt)"):
-                if 'rsa_cipher' not in st.session_state:
-                    st.warning("先に暗号化してください")
-                else:
+                if 'rsa_cipher' in st.session_state:
+                    start_time = time.time()
                     decrypted_text = rsa_decrypt(priv, st.session_state['rsa_cipher'])
-                    if decrypted_text:
-                        st.session_state['rsa_decrypted'] = decrypted_text
-                    else:
-                        st.error("復号に失敗しました（パディングエラーなど）")
+                    st.session_state['rsa_dec_time'] = (time.time() - start_time) * 1000
+                    st.session_state['rsa_decrypted'] = decrypted_text
 
         if 'rsa_cipher_show' in st.session_state:
             st.text_area("暗号文 (16進数表現)", st.session_state['rsa_cipher_show'], height=100)
@@ -560,25 +554,24 @@ with tab_rsa:
 
     else:
         st.warning("👈 まずは「鍵ペアを生成」ボタンを押してください。")
+
+# --- 処理時間タブ ---
 with tab_time:
     st.subheader("⏱ イベント別計測結果")
     
-    # セッションから数値を取得。まだ計算されていない場合は 0.0 を使う
+    # セッションから取得（安全な方法）
     g_time = st.session_state.get('rsa_gen_time', 0.0)
     e_time = st.session_state.get('rsa_enc_time', 0.0)
     d_time = st.session_state.get('rsa_dec_time', 0.0)
 
-    # 表示を3列にする
     c1, c2, c3 = st.columns(3)
     c1.metric("鍵生成", f"{g_time:.2f} ms")
     c2.metric("暗号化", f"{e_time:.2f} ms")
     c3.metric("復号", f"{d_time:.2f} ms")
 
-    # 安全に合計を計算
     total_time = g_time + e_time + d_time
     st.divider()
     st.info(f"全ての工程にかかった合計時間: **{total_time:.2f} ミリ秒**")
-
 # --- AES タブ ---
 with tab_aes:
     st.header("AES Encryption")
@@ -720,6 +713,7 @@ with tab_attack:
                     st.error("❌ 特定したdは間違っています。")
             else:
                 st.error(f"攻撃失敗: {result['reason']}")
+
 
 
 
