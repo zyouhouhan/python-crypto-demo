@@ -572,7 +572,7 @@ if st.session_state['current_page'] == "RSA":
             st.text_area("暗号文 (16進数表現)", st.session_state['rsa_cipher_show'], height=100)
         if 'rsa_decrypted' in st.session_state:
             st.success(f"復号された平文: {st.session_state['rsa_decrypted']}")
-    else:
+        else:
         st.warning("鍵のビット長を選択し、鍵ペアを生成してください。")
         
 #===================
@@ -692,6 +692,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+
 
 
 
