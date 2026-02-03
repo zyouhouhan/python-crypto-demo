@@ -530,7 +530,6 @@ if st.session_state['current_page'] == "RSA":
         st.write("")
         st.write("")
         if st.button("鍵ペアを生成"):
-            with st.spinner('巨大な素数を探索中...'):
                 start_time = time.time()
                 st.session_state['rsa_keys'] = generate_rsa_keypair(bits)
                 g_elapsed = (time.time() - start_time) * 1000
@@ -574,7 +573,7 @@ if st.session_state['current_page'] == "RSA":
         if 'rsa_decrypted' in st.session_state:
             st.success(f"復号された平文: {st.session_state['rsa_decrypted']}")
     else:
-        st.warning("まずは「鍵ペアを生成」から鍵を生成してください。")
+        st.warning("鍵のビット長を選択し、鍵ペアを生成してください。")
 
 # --- AES ページ ---
 elif st.session_state['current_page'] == "AES":
@@ -669,6 +668,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+
 
 
 
