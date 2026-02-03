@@ -538,7 +538,7 @@ if st.session_state['current_page'] == "RSA":
         if st.session_state['rsa_keys']:
             pub, priv = st.session_state['rsa_keys']
             e, n = pub
-             d, _ = priv
+            d, _ = priv
 
             with st.expander("生成された鍵の詳細を見る", expanded=True):
                 st.markdown(f"**Public Key (e, n):**")
@@ -693,6 +693,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+
 
 
 
