@@ -111,9 +111,53 @@ def rsa_decrypt(pk, ciphertext_blocks):
             return None
     return b''.join(decrypted_blocks).decode('utf-8', errors='ignore')
 
-with tab_time:
+
+# ==========================================
+# 2. Streamlit 画面表示・実行部分
+# ==========================================
+st.title("RSA 暗号化シミュレーター")
+
+# 入力フォーム
+message = st.text_input("暗号化するメッセージを入力してください", "Hello World")
+bits = st.select_slider("鍵長（bits）を選択", options=[512, 1024, 2048], value=1024)
+
+if st.button("RSA処理を実行"):
+    # --- 処理と計測 ---
+    # 1. 鍵生成
+    start_gen = time.time()
+    public_key, private_key = generate_rsa_keypair(bits)
+    gen_time = (time.time() - start_gen) * 1000
+
+    # 2. 暗号化
+    start_enc = time.time()
+    encrypted = rsa_encrypt(public_key, message)
+    enc_time = (time.time() - start_enc) * 1000
+
+    # 3. 復号
+    start_dec = time.time()
+    decrypted = rsa_decrypt(private_key, encrypted)
+    dec_time = (time.time() - start_dec) * 1000
+
+    # --- タブ表示 ---
+    # 既存のタブ構成に「⏱ 処理時間」を追加
+    tab_res, tab_key, tab_time = st.tabs(["🔐 実行結果", "🔑 鍵情報 (16進数)", "⏱ 処理時間"])
+
+    with tab_res:
+        st.success(f"**復号結果:** {decrypted}")
+        with st.expander("暗号文の詳細を表示"):
+            st.code([hex(c) for c in encrypted])
+
+    with tab_key:
+        e, n = public_key
+        d, _ = private_key
+        st.markdown("**公開鍵 (e, n):**")
+        st.code(f"e: {hex(e)}\nn: {hex(n)}")
+        st.markdown("**秘密鍵 (d):**")
+        st.code(f"d: {hex(d)}")
+
+    with tab_time:
         st.subheader("イベント別計測結果")
-        # メトリックで綺麗に表示
+        # ここで計測した値を表示
         c1, c2, c3 = st.columns(3)
         c1.metric("鍵生成", f"{gen_time:.2f} ms")
         c2.metric("暗号化", f"{enc_time:.2f} ms")
@@ -123,7 +167,8 @@ with tab_time:
         total_time = gen_time + enc_time + dec_time
         st.divider()
         st.info(f"全ての工程にかかった合計時間: **{total_time:.2f} ミリ秒**")
-    
+
+
 # AESの実装
 SBOX = [
     0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
@@ -714,6 +759,7 @@ with tab_attack:
                     st.error("❌ 特定したdは間違っています。")
             else:
                 st.error(f"攻撃失敗: {result['reason']}")
+
 
 
 
