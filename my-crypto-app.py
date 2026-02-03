@@ -557,7 +557,7 @@ with tab_rsa:
 
 # --- 処理時間タブ ---
 
-tab_rsa, tab_time = st.tabs(["🔐 RSA暗号化", "⏱ 処理時間"])
+tab_time = st.tabs([ "⏱ 処理時間"])
 with tab_time:
     st.subheader("⏱ イベント別計測結果")
     
@@ -574,6 +574,8 @@ with tab_time:
     total_time = g_time + e_time + d_time
     st.divider()
     st.info(f"全ての工程にかかった合計時間: **{total_time:.2f} ミリ秒**")
+
+
 # --- AES タブ ---
 with tab_aes:
     st.header("AES Encryption")
@@ -715,6 +717,7 @@ with tab_attack:
                     st.error("❌ 特定したdは間違っています。")
             else:
                 st.error(f"攻撃失敗: {result['reason']}")
+
 
 
 
