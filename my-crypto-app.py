@@ -516,7 +516,7 @@ if st.session_state['current_page'] == "RSA":
     st.header("🔑 RSA Encryption")
     st.info("素因数分解の困難性を利用した公開鍵暗号方式です。")
 # ページ内を2つのタブに分割
-    tab1, tab2 = st.tabs(["🏗️ 鍵ペアの生成", "📧 メッセージ暗号化・復号"])
+    tab1, tab2 = st.tabs(["1 鍵ペアの生成", "2 メッセージ暗号化・復号"])
     with tab1:
         st.subheader("ステップ 1: 鍵ペアを作成する")
         if 'rsa_keys' not in st.session_state:
@@ -693,6 +693,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+
 
 
 
