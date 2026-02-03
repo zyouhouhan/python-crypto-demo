@@ -110,6 +110,8 @@ def rsa_decrypt(pk, ciphertext_blocks):
         except ValueError:
             return None
     return b''.join(decrypted_blocks).decode('utf-8', errors='ignore')
+    
+tab_rsa, tab_time = st.tabs(["🔐 RSA暗号化", "⏱ 処理時間"])
 
 
 # AESの実装
@@ -713,6 +715,7 @@ with tab_attack:
                     st.error("❌ 特定したdは間違っています。")
             else:
                 st.error(f"攻撃失敗: {result['reason']}")
+
 
 
 
