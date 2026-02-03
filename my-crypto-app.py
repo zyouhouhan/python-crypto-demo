@@ -528,17 +528,17 @@ if st.session_state['current_page'] == "RSA":
         with col2:
             st.write("")
             st.write("")
-            if st.button("鍵ペアを生成"):
+        if st.button("鍵ペアを生成"):
                 start_time = time.time()
                 st.session_state['rsa_keys'] = generate_rsa_keypair(bits)
                 g_elapsed = (time.time() - start_time) * 1000
                 st.session_state['rsa_gen_time'] = g_elapsed
                 st.success(f"鍵生成完了 ({g_elapsed/1000:.3f}秒)")
 
-        if st.session_state['rsa_keys']:
-            pub, priv = st.session_state['rsa_keys']
-            e, n = pub
-            d, _ = priv
+            if st.session_state['rsa_keys']:
+                pub, priv = st.session_state['rsa_keys']
+                e, n = pub
+                d, _ = priv
 
         with st.expander("生成された鍵の詳細を見る", expanded=True):
             st.markdown(f"**Public Key (e, n):**")
@@ -693,6 +693,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+
 
 
 
