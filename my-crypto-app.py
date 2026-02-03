@@ -149,7 +149,7 @@ def rsa_elapsedtime(public, private, message):
         st.code(f"{encrypted_hex}")
 	# UI部分の例
 　　　　st.title("RSA 暗号化シミュレーター")
-　　　　msg = st.text_input("暗号化するメッセージを入力してください", "Hello World")
+    msg = st.text_input("暗号化するメッセージを入力してください", "Hello World")
     if st.button("RSA計測実行"):
     # 鍵ペアを生成して計測関数を呼ぶ
     public_key, private_key = generate_rsa_keypair(bits=1024)
@@ -745,6 +745,7 @@ with tab_attack:
                     st.error("❌ 特定したdは間違っています。")
             else:
                 st.error(f"攻撃失敗: {result['reason']}")
+
 
 
 
