@@ -112,41 +112,39 @@ def rsa_decrypt(pk, ciphertext_blocks):
     return b''.join(decrypted_blocks).decode('utf-8', errors='ignore')
 	
 def rsa_elapsedtime(public, private, message):
-    st.subheader("🔐 RSA処理プロセス")
-    
-    # 全体の開始時間
-    total_start = time.time()
-
-    # --- 暗号化 ---
+    # --- 1. 暗号化時間の計測 ---
     encrypt_start = time.time()
     encrypted = encrypt(public, message)
     encrypt_end = time.time()
     encrypt_time = (encrypt_end - encrypt_start) * 1000
     
-    # --- 復号 ---
+    # --- 2. 復号時間の計測 ---
     decrypt_start = time.time()
     decrypted = decrypt(private, encrypted)
     decrypt_end = time.time()
     decrypt_time = (decrypt_end - decrypt_start) * 1000
     
-    total_time = (time.time() - total_start) * 1000
+    # --- 3. 全体時間の計算 (元のコードの不足分を修正) ---
+    total_time = encrypt_time + decrypt_time
 
-    # --- 画面への表示 ---
-    # カラムを使って横並びに数値を表示（ダッシュボード風）
-    col1, col2, col3 = st.columns(3)
-    col1.metric("暗号化時間", f"{encrypt_time:.3f} ms")
-    col2.metric("復号時間", f"{decrypt_time:.3f} ms")
-    col3.metric("合計処理時間", f"{total_time:.3f} ms")
-
-    # 詳細情報の表示
-    st.info(f"復号結果: **{decrypted}**")
+    # --- 4. Streamlit画面への表示 (ここが重要！) ---
+    st.write("---") # 区切り線
+    st.subheader("📊 処理速度の計測結果")
     
+    # 3つの数値をきれいに横並びで表示
+    col1, col2, col3 = st.columns(3)
+    col1.metric("暗号化", f"{encrypt_time:.3f} ms")
+    col2.metric("復号", f"{decrypt_time:.3f} ms")
+    col3.metric("合計", f"{total_time:.3f} ms")
+    
+    # 結果の表示
+    st.success(f"**復号結果:** {decrypted}")
+    
+    # 暗号文（長いので折りたたみ）
     with st.expander("暗号文の詳細を表示"):
         encrypted_hex = [hex(c) for c in encrypted]
         st.write(f"ブロック数: {len(encrypted)}")
-        st.code(f"{encrypted_hex[:3]} ...")
-
-    return decrypted
+        st.code(f"{encrypted_hex}")
 
 # AESの実装
 SBOX = [
@@ -738,6 +736,7 @@ with tab_attack:
                     st.error("❌ 特定したdは間違っています。")
             else:
                 st.error(f"攻撃失敗: {result['reason']}")
+
 
 
 
