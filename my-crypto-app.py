@@ -353,7 +353,7 @@ def brute_force_d(e: int, phi: int):
     """秘密鍵dの総当たり探索"""
     start = datetime.now()
     # デモ用：phiが大きすぎると終わらないので安全装置
-    if phi > 10_000_000:
+    if phi > 10_000_000_000_000:
         return None, elapsed_ms(start)
         
     for d in range(1, phi):
@@ -688,6 +688,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+
 
 
 
