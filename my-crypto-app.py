@@ -111,25 +111,27 @@ def rsa_decrypt(pk, ciphertext_blocks):
             return None
     return b''.join(decrypted_blocks).decode('utf-8', errors='ignore')
 	
+import streamlit as st
+import secrets
+import time
+import math
+from datetime import datetime
+from math import gcd
+
+# ==========================================
+# 2. 計測・表示用関数
+# ==========================================
 def rsa_elapsedtime(public, private, message):
-    # --- 1. 暗号化時間の計測 ---
     encrypt_start = time.time()
-    # 関数名が rsa_encrypt なので修正
     encrypted = rsa_encrypt(public, message)
-    encrypt_end = time.time()
-    encrypt_time = (encrypt_end - encrypt_start) * 1000
+    encrypt_time = (time.time() - encrypt_start) * 1000
     
-    # --- 2. 復号時間の計測 ---
     decrypt_start = time.time()
-    # 関数名が rsa_decrypt なので修正
     decrypted = rsa_decrypt(private, encrypted)
-    decrypt_end = time.time()
-    decrypt_time = (decrypt_end - decrypt_start) * 1000
+    decrypt_time = (time.time() - decrypt_start) * 1000
     
-    # --- 3. 全体時間の計算 ---
     total_time = encrypt_time + decrypt_time
 
-    # --- 4. Streamlit画面への表示 ---
     st.write("---") 
     st.subheader("📊 処理速度の計測結果")
     
@@ -147,12 +149,15 @@ def rsa_elapsedtime(public, private, message):
         encrypted_hex = [hex(c) for c in encrypted]
         st.write(f"ブロック数: {len(encrypted)}")
         st.code(f"{encrypted_hex}")
-		
-    # UI部分の例
-	st.title("RSA 暗号化シミュレーター")
-    msg = st.text_input("暗号化するメッセージを入力してください", "Hello World")
-    if st.button("RSA計測実行"):
-	# 鍵ペアを生成して計測関数を呼ぶ
+
+# ==========================================
+# 3. Streamlit UI部分 (関数の外に置く)
+# ==========================================
+st.title("RSA 暗号化シミュレーター")
+msg = st.text_input("暗号化するメッセージを入力してください", "Hello World")
+
+if st.button("RSA計測実行"):
+    # 鍵ペアを生成して計測関数を呼ぶ
     public_key, private_key = generate_rsa_keypair(bits=1024)
     rsa_elapsedtime(public_key, private_key, msg)
 
@@ -746,6 +751,7 @@ with tab_attack:
                     st.error("❌ 特定したdは間違っています。")
             else:
                 st.error(f"攻撃失敗: {result['reason']}")
+
 
 
 
