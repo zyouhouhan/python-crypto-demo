@@ -580,7 +580,7 @@ if st.session_state['current_page'] == "RSA":
     else:
         st.warning("👈 まずは「鍵ペアを生成」ボタンを押してください。")
     st.header("🔑 RSA Encryption")
-   if st.session_state.page == "RSA":
+    if st.session_state.page == "RSA":
 
 #============
 #AES
@@ -759,6 +759,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"暗号化/復号時間: **{gen_t + enc_t + dec_t:.2f} ミリ秒**") 
+
 
 
 
