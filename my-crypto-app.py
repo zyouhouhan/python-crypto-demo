@@ -520,7 +520,7 @@ if st.session_state['current_page'] == "RSA":
     with tab1:
         st.subheader("ステップ 1: 鍵ペアを作成する")
         if 'rsa_keys' not in st.session_state:
-        st.session_state['rsa_keys'] = None
+            st.session_state['rsa_keys'] = None
 
     col1, col2 = st.columns([2, 1])
     with col1:
@@ -692,6 +692,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+
 
 
 
