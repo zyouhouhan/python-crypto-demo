@@ -488,20 +488,20 @@ Pythonのみでゼロから実装した **RSA** と **AES** 暗号アルゴリ�
 内部の数学的処理やビット操作をコードで完全に再現しています。
 """)
 
-#======================
-#スライド風タブメニュー
-#======================
+# ==========================================
+# スライド風タブメニュー（サイドバー切り替え）
+# ==========================================
 
-# 1. ページ状態の管理（どの画面を開いているか記憶させる）
+# 1. ページ状態の管理
 if 'current_page' not in st.session_state:
     st.session_state['current_page'] = "RSA"
 
-# 2. サイドバーを「ナビゲーションメニュー」にする
+# 2. サイドバーをナビゲーションメニューにする
 with st.sidebar:
-    st.title("Crypto Dashboard")
+    st.title("🛡️ Crypto Dashboard")
     st.markdown("---")
     
-    # ボタンを並べてメニューにする
+    # 各ボタン。クリックするとページ状態が更新される
     if st.button("🔑 RSA (公開鍵暗号)", use_container_width=True):
         st.session_state['current_page'] = "RSA"
     if st.button("🛡️ AES (共通鍵暗号)", use_container_width=True):
@@ -510,15 +510,14 @@ with st.sidebar:
         st.session_state['current_page'] = "Demo"
     if st.button("⏱ 処理時間計測", use_container_width=True):
         st.session_state['current_page'] = "Time"
-        
-#==========
-#RSA
-#==========
 
+# ==========================================
+# 3. メインコンテンツの表示切り替え
+# ==========================================
+
+# --- RSA ページ ---
 if st.session_state['current_page'] == "RSA":
-    # --- RSA タブ ---
-    
-    st.header("RSA Encryption")
+    st.header("🔑 RSA Encryption")
     st.info("素因数分解の困難性を利用した公開鍵暗号方式です。")
 
     if 'rsa_keys' not in st.session_state:
@@ -553,7 +552,6 @@ if st.session_state['current_page'] == "RSA":
         rsa_msg = st.text_input("暗号化したいメッセージ (RSA)", "Hello, RSA World!")
 
         col_enc, col_dec = st.columns(2)
-
         with col_enc:
             if st.button("暗号化 (Encrypt)"):
                 if rsa_msg:
@@ -573,192 +571,105 @@ if st.session_state['current_page'] == "RSA":
 
         if 'rsa_cipher_show' in st.session_state:
             st.text_area("暗号文 (16進数表現)", st.session_state['rsa_cipher_show'], height=100)
-
         if 'rsa_decrypted' in st.session_state:
             st.success(f"復号された平文: {st.session_state['rsa_decrypted']}")
-
     else:
-        st.warning("👈 まずは「鍵ペアを生成」ボタンを押してください。")
-    st.header("🔑 RSA Encryption")
-if st.session_state.page == "RSA":
+        st.warning("👈 まずはサイドバーから鍵を生成してください。")
 
-#============
-#AES
-#============
-
+# --- AES ページ ---
 elif st.session_state['current_page'] == "AES":
-    # --- AES タブ ---
-
-    st.header("AES Encryption")
-    st.info("SPN構造を持つ、現在標準的な共通鍵暗号方式です。(ECBモードで動作)")
+    st.header("🛡️ AES Encryption")
+    st.info("SPN構造を持つ、現在標準的な共通鍵暗号方式です。")
 
     if 'aes_key' not in st.session_state:
         st.session_state['aes_key'] = None
 
     aes_bits = st.selectbox("AES鍵長", [128, 192, 256])
-
     col_a1, col_a2 = st.columns([3, 1])
     with col_a1:
-        key_input = st.text_input("秘密鍵 (Hex) - 空欄で自動生成", value="" if not st.session_state['aes_key'] else st.session_state['aes_key'].hex())
+        key_input = st.text_input("秘密鍵 (Hex)", value="" if not st.session_state['aes_key'] else st.session_state['aes_key'].hex())
     with col_a2:
         st.write("")
         st.write("")
         if st.button("ランダム鍵生成"):
-            new_key = secrets.token_bytes(aes_bits // 8)
-            st.session_state['aes_key'] = new_key
+            st.session_state['aes_key'] = secrets.token_bytes(aes_bits // 8)
             st.rerun()
-
-    current_key_bytes = None
-    if key_input:
-        try:
-            current_key_bytes = bytes.fromhex(key_input)
-            if len(current_key_bytes) != aes_bits // 8:
-                st.error(f"鍵の長さが正しくありません。{aes_bits}ビット({aes_bits//8}バイト)必要ですが、{len(current_key_bytes)}バイトです。")
-                current_key_bytes = None
-            else:
-                st.session_state['aes_key'] = current_key_bytes
-        except:
-            st.error("有効な16進数ではありません")
 
     if st.session_state['aes_key']:
         st.success(f"現在の鍵: {st.session_state['aes_key'].hex()}")
-
         st.divider()
         aes_msg = st.text_input("暗号化したいメッセージ (AES)", "Hello, AES World!")
-
+        
         col_aes_enc, col_aes_dec = st.columns(2)
-        aes = AES(aes_bits)
+        aes_obj = AES(aes_bits)
 
         with col_aes_enc:
             if st.button("AES 暗号化"):
-                if not aes_msg:
-                    st.warning("メッセージを入力してください")
-                else:
-                    expanded_key = aes.key_expansion(st.session_state['aes_key'])
-                    raw_bytes = aes_msg.encode('utf-8')
-                    padded = pkcs7_pad(raw_bytes)
+                if aes_msg:
+                    expanded_key = aes_obj.key_expansion(st.session_state['aes_key'])
+                    padded = pkcs7_pad(aes_msg.encode('utf-8'))
                     out = bytearray()
                     for i in range(0, len(padded), 16):
                         block = list(padded[i:i+16])
-                        enc_block = aes.encrypt_block(block, expanded_key)
+                        enc_block = aes_obj.encrypt_block(block, expanded_key)
                         out.extend(bytes(enc_block))
                     st.session_state['aes_cipher'] = bytes(out)
 
         with col_aes_dec:
             if st.button("AES 復号"):
-                if 'aes_cipher' not in st.session_state:
-                    st.warning("先に暗号化してください")
-                else:
-                    expanded_key = aes.key_expansion(st.session_state['aes_key'])
+                if 'aes_cipher' in st.session_state:
+                    expanded_key = aes_obj.key_expansion(st.session_state['aes_key'])
                     cipher_data = st.session_state['aes_cipher']
                     out = bytearray()
                     for i in range(0, len(cipher_data), 16):
                         block = list(cipher_data[i:i+16])
-                        dec_block = aes.decrypt_block(block, expanded_key)
+                        dec_block = aes_obj.decrypt_block(block, expanded_key)
                         out.extend(bytes(dec_block))
-                    try:
-                        unpadded = pkcs7_unpad(out)
-                        st.session_state['aes_decrypted'] = unpadded.decode('utf-8')
-                    except Exception as e:
-                        st.error(f"復号/パディング除去エラー: {e}")
+                    st.session_state['aes_decrypted'] = pkcs7_unpad(out).decode('utf-8')
 
         if 'aes_cipher' in st.session_state:
-            st.markdown("**暗号文 (Hex):**")
             st.code(st.session_state['aes_cipher'].hex(), language="text")
-
         if 'aes_decrypted' in st.session_state:
-             st.success(f"復号された平文: {st.session_state['aes_decrypted']}")
+            st.success(f"復号結果: {st.session_state['aes_decrypted']}")
 
-    st.header("🛡️ AES Encryption")
-    if st.session_state.page == "AES":
-
-#============
-#脆弱性デモ
-#============
-        
+# --- 脆弱性デモ ページ ---
 elif st.session_state['current_page'] == "Demo":
-    # --- 脆弱性デモ タブ (NEW) ---
-    
     st.header("💥 RSA完全攻撃デモ")
-    st.warning("⚠️ 公開鍵から秘密鍵を特定する実験です。鍵長が大きすぎるとフリーズします！")
-    
-    # Session State for Attack Demo
+    st.warning("⚠️ 公開鍵から秘密鍵を特定する実験です。")
+
     if 'weak_keys' not in st.session_state:
         st.session_state['weak_keys'] = None
-    
-    # 1. 鍵生成フェーズ
-    st.subheader("1. 脆弱な鍵の生成")
-    weak_bits = st.number_input("RSA鍵長 (推奨: 16〜30)", min_value=8, max_value=32, value=16, step=2)
-    
+
+    weak_bits = st.number_input("RSA鍵長 (推奨: 16〜30)", min_value=8, max_value=32, value=16)
     if st.button("脆弱な鍵ペアを生成"):
         pub, priv, p, q, phi, gen_ms = generate_weak_keypair(weak_bits)
-        st.session_state['weak_keys'] = {
-            "pub": pub, "priv": priv, "p": p, "q": q, "phi": phi, "gen_ms": gen_ms
-        }
-        st.success(f"鍵生成完了 ({gen_ms:.3f} ms)")
-        
+        st.session_state['weak_keys'] = {"pub": pub, "priv": priv, "p": p, "q": q, "phi": phi, "gen_ms": gen_ms}
+
     if st.session_state['weak_keys']:
         wk = st.session_state['weak_keys']
         e, n = wk['pub']
-        d, _ = wk['priv']
-        
-        col_k1, col_k2 = st.columns(2)
-        with col_k1:
-            st.info(f"**公開鍵 (Everyone knows)**\n\ne = {e}\n\nn = {n}")
-        with col_k2:
-            st.error(f"**秘密鍵 (Secret)**\n\nd = {d}\n\n(p={wk['p']}, q={wk['q']})")
-            
-        st.divider()
-        
-        # 2. 攻撃フェーズ
-        st.subheader("2. クラッキング実行 (公開鍵から秘密鍵を特定)")
-        st.markdown(f"攻撃者は `e={e}` と `n={n}` しか知りません。ここから `d` を計算します。")
-        
+        st.info(f"公開鍵: e={e}, n={n}")
         if st.button("攻撃開始 (Attack!)", type="primary"):
-            with st.spinner("総当たり攻撃中..."):
-                result = attack_from_public_key(e, n)
-            
+            result = attack_from_public_key(e, n)
             if result["success"]:
-                st.success("🎉 解読成功！秘密鍵を特定しました。")
-                st.metric("総所要時間", f"{result['total_ms']:.3f} ms")
-                
-                st.markdown("### 解析結果")
-                st.code(f"""
-因数分解結果: p = {result['p']}, q = {result['q']} (所要時間: {result['factor_ms']:.3f} ms)
-φ(n)計算:     φ = {result['phi']}
-秘密鍵特定:   d = {result['d']} (所要時間: {result['brute_ms']:.3f} ms)
-                """)
-                
-                if result['d'] == d:
-                    st.balloons()
-                    st.success("✅ 特定したdは、本物の秘密鍵と完全に一致しました！")
-                else:
-                    st.error("❌ 特定したdは間違っています。")
-            else:
-                st.error(f"攻撃失敗: {result['reason']}")
+                st.success(f"解読成功！ 秘密鍵 d = {result['d']}")
+                st.balloons()
 
-    st.header("💥 Vulnerability Demo")
-    if st.session_state.page == "attack":
-
-#============
-#処理時間
-#============
-        
+# --- 処理時間計測 ページ ---
 elif st.session_state['current_page'] == "Time":
-    # --- 処理時間表示（ここにご希望の計測結果を表示） ---
     st.header("⏱ イベント別計測結果")
-    
-    gen_t = st.session_state.get('rsa_gen_time', 0.0)
-    enc_t = st.session_state.get('rsa_enc_time', 0.0)
-    dec_t = st.session_state.get('rsa_dec_time', 0.0)
+    g_t = st.session_state.get('rsa_gen_time', 0.0)
+    e_t = st.session_state.get('rsa_enc_time', 0.0)
+    d_t = st.session_state.get('rsa_dec_time', 0.0)
 
     c1, c2, c3 = st.columns(3)
-    c1.metric("鍵生成", f"{gen_t:.2f} ms")
-    c2.metric("暗号化", f"{enc_t:.2f} ms")
-    c3.metric("復号", f"{dec_t:.2f} ms")
+    c1.metric("鍵生成", f"{g_t:.2f} ms")
+    c2.metric("暗号化", f"{e_t:.2f} ms")
+    c3.metric("復号", f"{d_t:.2f} ms")
 
     st.divider()
-    st.info(f"暗号化/復号時間: **{gen_t + enc_t + dec_t:.2f} ミリ秒**") 
+    st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+
 
 
 
