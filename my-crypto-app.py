@@ -561,14 +561,21 @@ with tab_rsa:
     else:
         st.warning("👈 まずは「鍵ペアを生成」ボタンを押してください。")
 with tab_time:
-    st.subheader("イベント別計測結果")
-    # ここで計測した値を表示
-    c1, c2 = st.columns(2)
-    c1.metric("暗号化", f"{enc_time:.2f} ms")
-    c2.metric("復号", f"{dec_time:.2f} ms")
+    st.subheader("⏱ イベント別計測結果")
+    
+    # セッションから数値を取得。まだ計算されていない場合は 0.0 を使う
+    g_time = st.session_state.get('rsa_gen_time', 0.0)
+    e_time = st.session_state.get('rsa_enc_time', 0.0)
+    d_time = st.session_state.get('rsa_dec_time', 0.0)
 
-    # 合計時間の表示
-    total_time = gen_time + enc_time + dec_time
+    # 表示を3列にする
+    c1, c2, c3 = st.columns(3)
+    c1.metric("鍵生成", f"{g_time:.2f} ms")
+    c2.metric("暗号化", f"{e_time:.2f} ms")
+    c3.metric("復号", f"{d_time:.2f} ms")
+
+    # 安全に合計を計算
+    total_time = g_time + e_time + d_time
     st.divider()
     st.info(f"全ての工程にかかった合計時間: **{total_time:.2f} ミリ秒**")
 
@@ -713,6 +720,7 @@ with tab_attack:
                     st.error("❌ 特定したdは間違っています。")
             else:
                 st.error(f"攻撃失敗: {result['reason']}")
+
 
 
 
