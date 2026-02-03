@@ -139,22 +139,11 @@ def rsa_elapsedtime(public, private, message):
     col1.metric("暗号化時間", f"{encrypt_time:.3f} ms")
     col2.metric("復号時間", f"{decrypt_time:.3f} ms")
     col3.metric("合計時間", f"{total_time:.3f} ms")
-    
-    if decrypted:
-        st.success(f"**復号結果:** {decrypted}")
-    else:
-        st.error("復号に失敗しました。")
-    
-    with st.expander("暗号文の詳細（16進数）を表示"):
-        encrypted_hex = [hex(c) for c in encrypted]
-        st.write(f"ブロック数: {len(encrypted)}")
-        st.code(f"{encrypted_hex}")
 
 # ==========================================
 # 3. Streamlit UI部分 (関数の外に置く)
 # ==========================================
-st.title("RSA 暗号化シミュレーター")
-msg = st.text_input("暗号化するメッセージを入力してください", "Hello World")
+st.title("RSA 暗号化/復号時間計測")
 
 if st.button("RSA計測実行"):
     # 鍵ペアを生成して計測関数を呼ぶ
@@ -751,6 +740,7 @@ with tab_attack:
                     st.error("❌ 特定したdは間違っています。")
             else:
                 st.error(f"攻撃失敗: {result['reason']}")
+
 
 
 
