@@ -518,7 +518,6 @@ with st.sidebar:
 if st.session_state['current_page'] == "RSA":
     # --- RSA タブ ---
     
-with tab_rsa:
     st.header("RSA Encryption")
     st.info("素因数分解の困難性を利用した公開鍵暗号方式です。")
 
@@ -589,7 +588,7 @@ with tab_rsa:
 
 elif st.session_state['current_page'] == "AES":
     # --- AES タブ ---
-with tab_aes:
+
     st.header("AES Encryption")
     st.info("SPN構造を持つ、現在標準的な共通鍵暗号方式です。(ECBモードで動作)")
 
@@ -679,7 +678,7 @@ with tab_aes:
         
 elif st.session_state['current_page'] == "Demo":
     # --- 脆弱性デモ タブ (NEW) ---
-with tab_attack:
+    
     st.header("💥 RSA完全攻撃デモ")
     st.warning("⚠️ 公開鍵から秘密鍵を特定する実験です。鍵長が大きすぎるとフリーズします！")
     
@@ -760,6 +759,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"暗号化/復号時間: **{gen_t + enc_t + dec_t:.2f} ミリ秒**") 
+
 
 
 
