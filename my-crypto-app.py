@@ -114,34 +114,36 @@ def rsa_decrypt(pk, ciphertext_blocks):
 def rsa_elapsedtime(public, private, message):
     # --- 1. 暗号化時間の計測 ---
     encrypt_start = time.time()
-    encrypted = encrypt(public, message)
+    # 関数名が rsa_encrypt なので修正
+    encrypted = rsa_encrypt(public, message)
     encrypt_end = time.time()
     encrypt_time = (encrypt_end - encrypt_start) * 1000
     
     # --- 2. 復号時間の計測 ---
     decrypt_start = time.time()
-    decrypted = decrypt(private, encrypted)
+    # 関数名が rsa_decrypt なので修正
+    decrypted = rsa_decrypt(private, encrypted)
     decrypt_end = time.time()
     decrypt_time = (decrypt_end - decrypt_start) * 1000
     
-    # --- 3. 全体時間の計算 (元のコードの不足分を修正) ---
+    # --- 3. 全体時間の計算 ---
     total_time = encrypt_time + decrypt_time
 
-    # --- 4. Streamlit画面への表示 (ここが重要！) ---
-    st.write("---") # 区切り線
+    # --- 4. Streamlit画面への表示 ---
+    st.write("---") 
     st.subheader("📊 処理速度の計測結果")
     
-    # 3つの数値をきれいに横並びで表示
     col1, col2, col3 = st.columns(3)
-    col1.metric("暗号化", f"{encrypt_time:.3f} ms")
-    col2.metric("復号", f"{decrypt_time:.3f} ms")
-    col3.metric("合計", f"{total_time:.3f} ms")
+    col1.metric("暗号化時間", f"{encrypt_time:.3f} ms")
+    col2.metric("復号時間", f"{decrypt_time:.3f} ms")
+    col3.metric("合計時間", f"{total_time:.3f} ms")
     
-    # 結果の表示
-    st.success(f"**復号結果:** {decrypted}")
+    if decrypted:
+        st.success(f"**復号結果:** {decrypted}")
+    else:
+        st.error("復号に失敗しました。")
     
-    # 暗号文（長いので折りたたみ）
-    with st.expander("暗号文の詳細を表示"):
+    with st.expander("暗号文の詳細（16進数）を表示"):
         encrypted_hex = [hex(c) for c in encrypted]
         st.write(f"ブロック数: {len(encrypted)}")
         st.code(f"{encrypted_hex}")
@@ -736,6 +738,7 @@ with tab_attack:
                     st.error("❌ 特定したdは間違っています。")
             else:
                 st.error(f"攻撃失敗: {result['reason']}")
+
 
 
 
