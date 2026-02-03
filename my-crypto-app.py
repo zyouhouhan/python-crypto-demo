@@ -110,9 +110,9 @@ def rsa_decrypt(pk, ciphertext_blocks):
         except ValueError:
             return None
     return b''.join(decrypted_blocks).decode('utf-8', errors='ignore')
-    with tab_time:
+
+with tab_time:
         st.subheader("イベント別計測結果")
-        
         # メトリックで綺麗に表示
         c1, c2, c3 = st.columns(3)
         c1.metric("鍵生成", f"{gen_time:.2f} ms")
@@ -121,8 +121,9 @@ def rsa_decrypt(pk, ciphertext_blocks):
 
         # 合計時間の表示
         total_time = gen_time + enc_time + dec_time
+        st.divider()
         st.info(f"全ての工程にかかった合計時間: **{total_time:.2f} ミリ秒**")
-
+    
 # AESの実装
 SBOX = [
     0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
@@ -713,6 +714,7 @@ with tab_attack:
                     st.error("❌ 特定したdは間違っています。")
             else:
                 st.error(f"攻撃失敗: {result['reason']}")
+
 
 
 
