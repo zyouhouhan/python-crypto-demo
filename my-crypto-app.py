@@ -110,45 +110,18 @@ def rsa_decrypt(pk, ciphertext_blocks):
         except ValueError:
             return None
     return b''.join(decrypted_blocks).decode('utf-8', errors='ignore')
-	
-import streamlit as st
-import secrets
-import time
-import math
-from datetime import datetime
-from math import gcd
+    with tab_time:
+        st.subheader("イベント別計測結果")
+        
+        # メトリックで綺麗に表示
+        c1, c2, c3 = st.columns(3)
+        c1.metric("鍵生成", f"{gen_time:.2f} ms")
+        c2.metric("暗号化", f"{enc_time:.2f} ms")
+        c3.metric("復号", f"{dec_time:.2f} ms")
 
-# ==========================================
-# 2. 計測・表示用関数
-# ==========================================
-def rsa_elapsedtime(public, private, message):
-    encrypt_start = time.time()
-    encrypted = rsa_encrypt(public, message)
-    encrypt_time = (time.time() - encrypt_start) * 1000
-    
-    decrypt_start = time.time()
-    decrypted = rsa_decrypt(private, encrypted)
-    decrypt_time = (time.time() - decrypt_start) * 1000
-    
-    total_time = encrypt_time + decrypt_time
-
-    st.write("---") 
-    st.subheader("📊 処理速度の計測結果")
-    
-    col1, col2, col3 = st.columns(3)
-    col1.metric("暗号化時間", f"{encrypt_time:.3f} ms")
-    col2.metric("復号時間", f"{decrypt_time:.3f} ms")
-    col3.metric("合計時間", f"{total_time:.3f} ms")
-
-# ==========================================
-# 3. Streamlit UI部分 (関数の外に置く)
-# ==========================================
-st.title("RSA 暗号化/復号時間計測")
-
-if st.button("RSA計測実行"):
-    # 鍵ペアを生成して計測関数を呼ぶ
-    public_key, private_key = generate_rsa_keypair(bits=1024)
-    rsa_elapsedtime(public_key, private_key, msg)
+        # 合計時間の表示
+        total_time = gen_time + enc_time + dec_time
+        st.info(f"全ての工程にかかった合計時間: **{total_time:.2f} ミリ秒**")
 
 # AESの実装
 SBOX = [
@@ -740,6 +713,7 @@ with tab_attack:
                     st.error("❌ 特定したdは間違っています。")
             else:
                 st.error(f"攻撃失敗: {result['reason']}")
+
 
 
 
