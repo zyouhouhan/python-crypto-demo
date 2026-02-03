@@ -492,6 +492,7 @@ Pythonのみでゼロから実装した **RSA** と **AES** 暗号アルゴリ�
 tab_rsa, tab_aes, tab_attack = st.tabs(["🔑 RSA (公開鍵暗号)", "🛡️ AES (共通鍵暗号)", "💥 脆弱性デモ"])
 
 # --- RSA タブ ---
+tab_rsa, tab_time = st.tabs(["🔐 RSA暗号化", "⏱ 処理時間"])
 with tab_rsa:
     st.header("RSA Encryption")
     st.info("素因数分解の困難性を利用した公開鍵暗号方式です。")
@@ -557,7 +558,6 @@ with tab_rsa:
 
 # --- 処理時間タブ ---
 
-tab_time = st.tabs([ "⏱ 処理時間"])
 with tab_time:
     st.subheader("⏱ イベント別計測結果")
     
@@ -717,6 +717,7 @@ with tab_attack:
                     st.error("❌ 特定したdは間違っています。")
             else:
                 st.error(f"攻撃失敗: {result['reason']}")
+
 
 
 
