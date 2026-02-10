@@ -546,7 +546,7 @@ if st.session_state['current_page'] == "RSA":
         
     st.divider()    
     st.subheader("STEP2: 暗号化・復号")
-    rsa_msg = st.text_input("暗号化したいメッセージ (RSA)", "Hello, RSA World!")
+    rsa_msg = st.text_input("暗号化したいメッセージ (任意の文章を暗号化できます)", "Hello, RSA World!")
 
     col_enc, col_dec = st.columns(2)
     with col_enc:
@@ -643,6 +643,19 @@ elif st.session_state['current_page'] == "AES":
             st.code(st.session_state['aes_cipher'].hex(), language="text")
         if 'aes_decrypted' in st.session_state:
             st.success(f"復号結果: {st.session_state['aes_decrypted']}")
+        st.divider()
+        st.subheader("STEP3: イベント別計測結果")
+        g_t = st.session_state.get('rsa_gen_time', 0.0)
+        e_t = st.session_state.get('rsa_enc_time', 0.0)
+        d_t = st.session_state.get('rsa_dec_time', 0.0)
+    
+        c1, c2, c3 = st.columns(3)
+        c1.metric("鍵生成", f"{g_t:.2f} ms")
+        c2.metric("暗号化", f"{e_t:.2f} ms")
+        c3.metric("復号", f"{d_t:.2f} ms")
+        
+        st.divider()
+        st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
 
 #=========================
 # --- 脆弱性デモ ページ ---
@@ -702,6 +715,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+
 
 
 
