@@ -542,7 +542,7 @@ if st.session_state['current_page'] == "RSA":
             st.markdown(f"**Private Key (d, n):**")
             st.code(f"d = {d}\nn = {n}")
     else:
-        st.warning("鍵のビット長を選択し、鍵ペアを生成してください。")
+        st.info("鍵のビット長を選択し、鍵ペアを生成してください。")
         
     st.divider()    
     st.subheader("STEP2: 暗号化・復号")
@@ -717,6 +717,7 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
+
 
 
 
