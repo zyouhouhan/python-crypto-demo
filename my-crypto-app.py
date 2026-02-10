@@ -603,7 +603,7 @@ elif st.session_state['current_page'] == "AES":
     st.info("SPN構造を持つ、現在標準的な共通鍵暗号方式です。")
     
 st.subheader("STEP1: 鍵ペアを作成")
-    if 'aes_key' not in st.session_state:
+if 'aes_key' not in st.session_state:
         st.session_state['aes_key'] = None
     
     aes_bits = st.selectbox("AES鍵長", [128, 192, 256])
@@ -719,6 +719,7 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
+
 
 
 
