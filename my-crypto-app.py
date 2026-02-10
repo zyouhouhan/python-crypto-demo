@@ -632,38 +632,38 @@ elif st.session_state['current_page'] == "AES":
     st.subheader("STEP2: 暗号化/復号") 
     aes_msg = st.text_input("暗号化したいメッセージ (任意の文章を暗号化できます)", "Hello, AES World!")
         
-        col_aes_enc, col_aes_dec = st.columns(2)
-        aes_obj = AES(aes_bits)
-        with col_aes_enc:
-            if st.button("AES 暗号化"):
-                if aes_msg:
-                    start_enc = time.time() # 計測開始
-                    expanded_key = aes_obj.key_expansion(st.session_state['aes_key'])
-                    padded = pkcs7_pad(aes_msg.encode('utf-8'))
-                    out = bytearray()
-                    for i in range(0, len(padded), 16):
-                        block = list(padded[i:i+16])
-                        enc_block = aes_obj.encrypt_block(block, expanded_key)
-                        out.extend(bytes(enc_block))
-                    st.session_state['aes_cipher'] = bytes(out)
-                    st.session_state['aes_enc_time'] = (time.time() - start_enc) * 1000 # AES用の変数に保存
-        with col_aes_dec:
-            if st.button("AES 復号"):
-                if 'aes_cipher' in st.session_state:
-                    start_dec = time.time() # 計測開始
-                    expanded_key = aes_obj.key_expansion(st.session_state['aes_key'])
-                    cipher_data = st.session_state['aes_cipher']
-                    out = bytearray()
-                    for i in range(0, len(cipher_data), 16):
-                        block = list(cipher_data[i:i+16])
-                        dec_block = aes_obj.decrypt_block(block, expanded_key)
-                        out.extend(bytes(dec_block))
-                    st.session_state['aes_decrypted'] = pkcs7_unpad(out).decode('utf-8')
-                    st.session_state['aes_dec_time'] = (time.time() - start_dec) * 1000 # AES用の変数に保存
+    col_aes_enc, col_aes_dec = st.columns(2)
+    aes_obj = AES(aes_bits)
+    with col_aes_enc:
+        if st.button("AES 暗号化"):
+            if aes_msg:
+                start_enc = time.time() # 計測開始
+                expanded_key = aes_obj.key_expansion(st.session_state['aes_key'])
+                padded = pkcs7_pad(aes_msg.encode('utf-8'))
+                out = bytearray()
+                for i in range(0, len(padded), 16):
+                    block = list(padded[i:i+16])
+                    enc_block = aes_obj.encrypt_block(block, expanded_key)
+                    out.extend(bytes(enc_block))
+                st.session_state['aes_cipher'] = bytes(out)
+                st.session_state['aes_enc_time'] = (time.time() - start_enc) * 1000 # AES用の変数に保存
+    with col_aes_dec:
+        if st.button("AES 復号"):
+            if 'aes_cipher' in st.session_state:
+                start_dec = time.time() # 計測開始
+                expanded_key = aes_obj.key_expansion(st.session_state['aes_key'])
+                cipher_data = st.session_state['aes_cipher']
+                out = bytearray()
+                for i in range(0, len(cipher_data), 16):
+                    block = list(cipher_data[i:i+16])
+                    dec_block = aes_obj.decrypt_block(block, expanded_key)
+                    out.extend(bytes(dec_block))
+                st.session_state['aes_decrypted'] = pkcs7_unpad(out).decode('utf-8')
+                st.session_state['aes_dec_time'] = (time.time() - start_dec) * 1000 # AES用の変数に保存
 
-        if 'aes_cipher' in st.session_state:
+    if 'aes_cipher' in st.session_state:
                 st.code(st.session_state['aes_cipher'].hex(), language="text")
-        if 'aes_decrypted' in st.session_state:
+    if 'aes_decrypted' in st.session_state:
                 st.success(f"復号結果: {st.session_state['aes_decrypted']}")
             
     st.divider()
@@ -720,6 +720,7 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
+
 
 
 
