@@ -738,77 +738,72 @@ elif st.session_state['current_page'] == "Demo":
         st.subheader("💥AES攻撃デモ")
         st.warning("⚠️ 短い鍵を全パターン試して解読する「総当たり攻撃」の実験です。")
     
-            from typing import Tuple
-    
-            # クラスメソッドを使わずに直接パディング処理を行う関数
-            def pkcs7_pad_local(data: bytes, block_size: int = 16) -> bytes:
-                pad_len = block_size - (len(data) % block_size)
-                return data + bytes([pad_len] * pad_len)
-    
-            def generate_plaintext(rand_bits: int) -> bytes:
-                if rand_bits == 0: return b''
-                rand_bytes_len = (rand_bits + 7) // 8
-                value = secrets.randbits(rand_bits)
-                if rand_bits > 0:
-                    value |= (1 << (rand_bits - 1))
-                return value.to_bytes(rand_bytes_len, 'big')
-    
-            def brute_force_search(aes_obj, cipher_bytes: bytes, plaintext_bytes: bytes,
-                                   key_size_bits: int, search_bits: int) -> Tuple[bytes, int]:
-                key_bytes_len = key_size_bits // 8
-                total = 1 << search_bits
-                # ローカルのパディング関数を使用
-                padded = pkcs7_pad_local(plaintext_bytes, 16)
-                attempts = 0
+        from typing import Tuple
+
+        # パディング処理を行う関数（インデントを修正）
+        def pkcs7_pad_local(data: bytes, block_size: int = 16) -> bytes:
+            pad_len = block_size - (len(data) % block_size)
+            return data + bytes([pad_len] * pad_len)
+
+        def generate_plaintext(rand_bits: int) -> bytes:
+            if rand_bits == 0: return b''
+            rand_bytes_len = (rand_bits + 7) // 8
+            value = secrets.randbits(rand_bits)
+            if rand_bits > 0:
+                value |= (1 << (rand_bits - 1))
+            return value.to_bytes(rand_bytes_len, 'big')
+
+        def brute_force_search(aes_obj, cipher_bytes: bytes, plaintext_bytes: bytes,
+                               key_size_bits: int, search_bits: int) -> Tuple[bytes, int]:
+            key_bytes_len = key_size_bits // 8
+            total = 1 << search_bits
+            padded = pkcs7_pad_local(plaintext_bytes, 16)
+            attempts = 0
+            
+            for candidate_int in range(total):
+                attempts += 1
+                candidate_key = candidate_int.to_bytes(key_bytes_len, 'big')
+                expanded = aes_obj.key_expansion(candidate_key)
+                out = bytearray()
+                for i in range(0, len(padded), 16):
+                    block = list(padded[i:i + 16])
+                    out.extend(bytes(aes_obj.encrypt_block(block, expanded)))
                 
-                for candidate_int in range(total):
-                    attempts += 1
-                    candidate_key = candidate_int.to_bytes(key_bytes_len, 'big')
-                    # AESクラスのメソッド名が正しいか確認しながら実行
-                    expanded = aes_obj.key_expansion(candidate_key)
-                    out = bytearray()
-                    for i in range(0, len(padded), 16):
-                        block = list(padded[i:i + 16])
-                        # encrypt_block を呼び出す
-                        out.extend(bytes(aes_obj.encrypt_block(block, expanded)))
-                    
-                    if bytes(out) == cipher_bytes:
-                        return candidate_key, attempts
-                return None, attempts
-    
-            # 設定
-            aes_key_size = 128
-            search_bits = 14  # 探索範囲
-            plaintext_bits = 64
-    
-            # 準備
-            plaintext = generate_plaintext(plaintext_bits)
-            secret_int = secrets.randbits(search_bits)
-            secret_key = secret_int.to_bytes(aes_key_size // 8, 'big')
-            
-            # AESエンジンの作成
-            aes_engine = AES(aes_key_size)
-            
-            # 事前に暗号文を作っておく
-            expanded_secret = aes_engine.key_expansion(secret_key)
-            padded_plain = pkcs7_pad_local(plaintext, 16)
-            cipher_out = bytearray()
-            for i in range(0, len(padded_plain), 16):
-                block = list(padded_plain[i:i + 16])
-                cipher_out.extend(bytes(aes_engine.encrypt_block(block, expanded_secret)))
-            cipher = bytes(cipher_out)
-    
-            st.write(f"AES 鍵長: {aes_key_size} ビット / 総当たり対象: {search_bits} ビット")
-            st.info(f"ターゲット平文: {plaintext.hex()}")
-            
-            if st.button("総当たり攻撃を実行"):
-                with st.spinner("解析中..."):
-                    found_key, attempts = brute_force_search(aes_engine, cipher, plaintext, aes_key_size, search_bits)
-                    if found_key:
-                        st.success(f"🔓 鍵を発見しました！: {found_key.hex()}")
-                        st.info(f"試行回数: {attempts}回")
-                    else:
-                        st.error("鍵は見つかりませんでした。")
+                if bytes(out) == cipher_bytes:
+                    return candidate_key, attempts
+            return None, attempts
+
+        # 設定と準備
+        aes_key_size = 128
+        search_bits = 14
+        plaintext_bits = 64
+
+        plaintext = generate_plaintext(plaintext_bits)
+        secret_int = secrets.randbits(search_bits)
+        secret_key = secret_int.to_bytes(aes_key_size // 8, 'big')
+        
+        aes_engine = AES(aes_key_size)
+        
+        # 暗号文生成
+        expanded_secret = aes_engine.key_expansion(secret_key)
+        padded_plain = pkcs7_pad_local(plaintext, 16)
+        cipher_out = bytearray()
+        for i in range(0, len(padded_plain), 16):
+            block = list(padded_plain[i:i + 16])
+            cipher_out.extend(bytes(aes_engine.encrypt_block(block, expanded_secret)))
+        cipher = bytes(cipher_out)
+
+        st.write(f"AES 鍵長: {aes_key_size} ビット / 総当たり対象: {search_bits} ビット")
+        st.info(f"ターゲット平文: {plaintext.hex()}")
+        
+        if st.button("総当たり攻撃を実行", key="aes_final_attack"):
+            with st.spinner("解析中..."):
+                found_key, attempts = brute_force_search(aes_engine, cipher, plaintext, aes_key_size, search_bits)
+                if found_key:
+                    st.success(f"🔓 鍵を発見しました！: {found_key.hex()}")
+                    st.info(f"試行回数: {attempts}回")
+                else:
+                    st.error("鍵は見つかりませんでした。")
 
 
 
