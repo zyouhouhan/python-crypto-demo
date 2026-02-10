@@ -628,8 +628,8 @@ elif st.session_state['current_page'] == "AES":
     else:
             st.info("鍵長を選択しランダム鍵生成をクリックしてください。")
         
-        st.divider()
-        st.subheader("STEP2: 暗号化/復号") 
+    st.divider()
+    st.subheader("STEP2: 暗号化/復号") 
         aes_msg = st.text_input("暗号化したいメッセージ (任意の文章を暗号化できます)", "Hello, AES World!")
         
         col_aes_enc, col_aes_dec = st.columns(2)
@@ -720,6 +720,7 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
+
 
 
 
