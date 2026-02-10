@@ -661,13 +661,13 @@ elif st.session_state['current_page'] == "AES":
                     st.session_state['aes_decrypted'] = pkcs7_unpad(out).decode('utf-8')
                     st.session_state['aes_dec_time'] = (time.time() - start_dec) * 1000 # AES用の変数に保存
 
-        if 'aes_cipher' in st.session_state:
+    if 'aes_cipher' in st.session_state:
             st.code(st.session_state['aes_cipher'].hex(), language="text")
-        if 'aes_decrypted' in st.session_state:
+    if 'aes_decrypted' in st.session_state:
             st.success(f"復号結果: {st.session_state['aes_decrypted']}")
             
-        st.divider()
-        st.subheader("STEP3: イベント別計測結果")
+    st.divider()
+    st.subheader("STEP3: イベント別計測結果")
         ga_t = st.session_state.get('aes_gen_time', 0.0)
         ea_t = st.session_state.get('aes_enc_time', 0.0)
         da_t = st.session_state.get('aes_dec_time', 0.0)
@@ -720,6 +720,7 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
+
 
 
 
