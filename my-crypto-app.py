@@ -564,19 +564,20 @@ if st.session_state['current_page'] == "RSA":
                 st.session_state['rsa_cipher_show'] = "".join([f"{x:x}" for x in st.session_state['rsa_cipher']])
             else:
                 st.error("鍵が生成されていないか、メッセージが空です。")
-
-    with col_dec:
-        if st.button("復号 (Decrypt)"):
+                
+        with col_dec:
             if 'rsa_cipher' in st.session_state:
-                start_time = time.time()
-                decrypted_text = rsa_decrypt(priv, st.session_state['rsa_cipher'])
-                st.session_state['rsa_dec_time'] = (time.time() - start_time) * 1000
-                st.session_state['rsa_decrypted'] = decrypted_text
-
-    if 'rsa_cipher_show' in st.session_state:
-        st.text_area("暗号文 (16進数表現)", st.session_state['rsa_cipher_show'], height=100)
-    if 'rsa_decrypted' in st.session_state:
-        st.success(f"復号された平文: {st.session_state['rsa_decrypted']}")
+                if st.button("復号 (Decrypt)"):
+                    if 'rsa_cipher' in st.session_state:
+                        start_time = time.time()
+                        decrypted_text = rsa_decrypt(priv, st.session_state['rsa_cipher'])
+                        st.session_state['rsa_dec_time'] = (time.time() - start_time) * 1000
+                        st.session_state['rsa_decrypted'] = decrypted_text
+    
+        if 'rsa_cipher_show' in st.session_state:
+            st.text_area("暗号文 (16進数表現)", st.session_state['rsa_cipher_show'], height=100)
+        if 'rsa_decrypted' in st.session_state:
+            st.success(f"復号された平文: {st.session_state['rsa_decrypted']}")
         
     st.divider()
     st.subheader("STEP3: イベント別計測結果")
@@ -718,6 +719,7 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
+
 
 
 
