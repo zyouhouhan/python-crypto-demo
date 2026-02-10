@@ -596,7 +596,7 @@ if st.session_state['current_page'] == "RSA":
 #===================
 # --- AES ページ ---
 #===================
-
+st.divider()
 elif st.session_state['current_page'] == "AES":
     st.header("🛡️ AES Encryption")
     st.info("SPN構造を持つ、現在標準的な共通鍵暗号方式です。")
@@ -720,6 +720,7 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
+
 
 
 
