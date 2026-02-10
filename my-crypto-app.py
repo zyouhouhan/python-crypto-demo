@@ -515,62 +515,62 @@ with st.sidebar:
 if st.session_state['current_page'] == "RSA":
     st.header("🔑 RSA Encryption")
     st.info("素因数分解の困難性を利用した公開鍵暗号方式です。")
-        st.subheader("ステップ 1: 鍵ペアを作成する")
-        if 'rsa_keys' not in st.session_state:
-            st.session_state['rsa_keys'] = None
+    st.subheader("ステップ 1: 鍵ペアを作成する")
+    if 'rsa_keys' not in st.session_state:
+        st.session_state['rsa_keys'] = None
 
-        col1, col2 = st.columns([2, 1])
-        with col1:
-            bits = st.selectbox("鍵のビット長 (大きいほど安全ですが遅くなります)", [512, 1024, 2048], index=1)
-        with col2:
-            st.write("")
-            st.write("")
-        if st.button("鍵ペアを生成"):
-                start_time = time.time()
-                st.session_state['rsa_keys'] = generate_rsa_keypair(bits)
-                g_elapsed = (time.time() - start_time) * 1000
-                st.session_state['rsa_gen_time'] = g_elapsed
-                st.success(f"鍵生成完了 ({g_elapsed/1000:.3f}秒)")
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        bits = st.selectbox("鍵のビット長 (大きいほど安全ですが遅くなります)", [512, 1024, 2048], index=1)
+    with col2:
+        st.write("")
+        st.write("")
+    if st.button("鍵ペアを生成"):
+            start_time = time.time()
+            st.session_state['rsa_keys'] = generate_rsa_keypair(bits)
+            g_elapsed = (time.time() - start_time) * 1000
+            st.session_state['rsa_gen_time'] = g_elapsed
+            st.success(f"鍵生成完了 ({g_elapsed/1000:.3f}秒)")
 
-        if st.session_state['rsa_keys']:
-            pub, priv = st.session_state['rsa_keys']
-            e, n = pub
-            d, _ = priv
+    if st.session_state['rsa_keys']:
+        pub, priv = st.session_state['rsa_keys']
+        e, n = pub
+        d, _ = priv
 
-            with st.expander("生成された鍵の詳細を見る", expanded=True):
-                st.markdown(f"**Public Key (e, n):**")
-                st.code(f"e = {e}\nn = {n}")
-                st.markdown(f"**Private Key (d, n):**")
-                st.code(f"d = {d}\nn = {n}")
-        else:
-            st.warning("鍵のビット長を選択し、鍵ペアを生成してください。")
+        with st.expander("生成された鍵の詳細を見る", expanded=True):
+            st.markdown(f"**Public Key (e, n):**")
+            st.code(f"e = {e}\nn = {n}")
+            st.markdown(f"**Private Key (d, n):**")
+            st.code(f"d = {d}\nn = {n}")
+    else:
+        st.warning("鍵のビット長を選択し、鍵ペアを生成してください。")
         
-        st.subheader("ステップ 2: 暗号化を試す")
-        st.divider()
-        rsa_msg = st.text_input("暗号化したいメッセージ (RSA)", "Hello, RSA World!")
+    st.subheader("ステップ 2: 暗号化を試す")
+    st.divider()
+    rsa_msg = st.text_input("暗号化したいメッセージ (RSA)", "Hello, RSA World!")
 
-        col_enc, col_dec = st.columns(2)
-        with col_enc:
-            if st.button("暗号化 (Encrypt)"):
-                if rsa_msg:
-                    start_time = time.time()
-                    encrypted_ints = rsa_encrypt(pub, rsa_msg)
-                    st.session_state['rsa_enc_time'] = (time.time() - start_time) * 1000
-                    st.session_state['rsa_cipher'] = encrypted_ints
-                    st.session_state['rsa_cipher_show'] = "".join([f"{x:x}" for x in encrypted_ints])
+    col_enc, col_dec = st.columns(2)
+    with col_enc:
+        if st.button("暗号化 (Encrypt)"):
+            if rsa_msg:
+                start_time = time.time()
+                encrypted_ints = rsa_encrypt(pub, rsa_msg)
+                st.session_state['rsa_enc_time'] = (time.time() - start_time) * 1000
+                st.session_state['rsa_cipher'] = encrypted_ints
+                st.session_state['rsa_cipher_show'] = "".join([f"{x:x}" for x in encrypted_ints])
 
-        with col_dec:
-            if st.button("復号 (Decrypt)"):
-                if 'rsa_cipher' in st.session_state:
-                    start_time = time.time()
-                    decrypted_text = rsa_decrypt(priv, st.session_state['rsa_cipher'])
-                    st.session_state['rsa_dec_time'] = (time.time() - start_time) * 1000
-                    st.session_state['rsa_decrypted'] = decrypted_text
+    with col_dec:
+        if st.button("復号 (Decrypt)"):
+            if 'rsa_cipher' in st.session_state:
+                start_time = time.time()
+                decrypted_text = rsa_decrypt(priv, st.session_state['rsa_cipher'])
+                st.session_state['rsa_dec_time'] = (time.time() - start_time) * 1000
+                st.session_state['rsa_decrypted'] = decrypted_text
 
-        if 'rsa_cipher_show' in st.session_state:
-            st.text_area("暗号文 (16進数表現)", st.session_state['rsa_cipher_show'], height=100)
-        if 'rsa_decrypted' in st.session_state:
-            st.success(f"復号された平文: {st.session_state['rsa_decrypted']}")
+    if 'rsa_cipher_show' in st.session_state:
+        st.text_area("暗号文 (16進数表現)", st.session_state['rsa_cipher_show'], height=100)
+    if 'rsa_decrypted' in st.session_state:
+        st.success(f"復号された平文: {st.session_state['rsa_decrypted']}")
         
 #===================
 # --- AES ページ ---
@@ -689,6 +689,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+
 
 
 
