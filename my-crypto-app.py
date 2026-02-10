@@ -612,7 +612,9 @@ elif st.session_state['current_page'] == "AES":
         st.write("")
         st.write("")
         if st.button("ランダム鍵生成"):
+            start_gen = time.time()
             st.session_state['aes_key'] = secrets.token_bytes(aes_bits // 8)
+            st.session_state['aes_gen_time'] = (time.time() - start_gen) * 1000 # AES用の変数に保存
             st.rerun()
     st.warning("鍵長を選択しランダム鍵生成をクリックしてください。")
     if st.session_state['aes_key']:
@@ -626,6 +628,7 @@ elif st.session_state['current_page'] == "AES":
         with col_aes_enc:
             if st.button("AES 暗号化"):
                 if aes_msg:
+                    start_enc = time.time() # 計測開始
                     expanded_key = aes_obj.key_expansion(st.session_state['aes_key'])
                     padded = pkcs7_pad(aes_msg.encode('utf-8'))
                     out = bytearray()
@@ -634,10 +637,11 @@ elif st.session_state['current_page'] == "AES":
                         enc_block = aes_obj.encrypt_block(block, expanded_key)
                         out.extend(bytes(enc_block))
                     st.session_state['aes_cipher'] = bytes(out)
-
+                    st.session_state['aes_enc_time'] = (time.time() - start_enc) * 1000 # AES用の変数に保存
         with col_aes_dec:
             if st.button("AES 復号"):
                 if 'aes_cipher' in st.session_state:
+                    start_dec = time.time() # 計測開始
                     expanded_key = aes_obj.key_expansion(st.session_state['aes_key'])
                     cipher_data = st.session_state['aes_cipher']
                     out = bytearray()
@@ -646,6 +650,7 @@ elif st.session_state['current_page'] == "AES":
                         dec_block = aes_obj.decrypt_block(block, expanded_key)
                         out.extend(bytes(dec_block))
                     st.session_state['aes_decrypted'] = pkcs7_unpad(out).decode('utf-8')
+                    st.session_state['aes_dec_time'] = (time.time() - start_dec) * 1000 # AES用の変数に保存
 
         if 'aes_cipher' in st.session_state:
             st.code(st.session_state['aes_cipher'].hex(), language="text")
@@ -653,17 +658,17 @@ elif st.session_state['current_page'] == "AES":
             st.success(f"復号結果: {st.session_state['aes_decrypted']}")
         st.divider()
         st.subheader("STEP3: イベント別計測結果")
-        g_t = st.session_state.get('rsa_gen_time', 0.0)
-        e_t = st.session_state.get('rsa_enc_time', 0.0)
-        d_t = st.session_state.get('rsa_dec_time', 0.0)
+        ga_t = st.session_state.get('aes_gen_time', 0.0)
+        ea_t = st.session_state.get('aes_enc_time', 0.0)
+        da_t = st.session_state.get('aes_dec_time', 0.0)
     
         c1, c2, c3 = st.columns(3)
-        c1.metric("鍵生成", f"{g_t:.2f} ms")
-        c2.metric("暗号化", f"{e_t:.2f} ms")
-        c3.metric("復号", f"{d_t:.2f} ms")
+        c1.metric("鍵生成", f"{ga_t:.2f} ms")
+        c2.metric("暗号化", f"{ea_t:.2f} ms")
+        c3.metric("復号", f"{da_t:.2f} ms")
         
         st.divider()
-        st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+        st.info(f"合計処理時間: **{ga_t + ea_t + da_t:.2f} ミリ秒**")
 
 #=========================
 # --- 脆弱性デモ ページ ---
@@ -723,6 +728,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+
 
 
 
