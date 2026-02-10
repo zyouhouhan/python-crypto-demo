@@ -737,12 +737,17 @@ elif st.session_state['current_page'] == "Demo":
                 else:
                     st.error("攻撃に失敗しました。")
 
-        # ---------------------------
-        # 【AES攻撃タブ】
-        # ---------------------------
-        with tab_aes:
-            st.subheader("AES攻撃デモ")
-            st.warning("⚠️ 短い鍵を全パターン試して解読する「総当たり攻撃」の実験です。")
+
+    # ---------------------------
+    # 【AES攻撃タブ】
+    # ---------------------------
+    with tab_aes:
+        st.subheader("AES攻撃デモ")
+        st.warning("⚠️ 短い鍵を全パターン試して解読する「総当たり攻撃」の実験です。")
+
+        # 型ヒントのためのインポート（NameError対策）
+            from typing import Tuple
+
             def pkcs7_pad(data: bytes, block_size: int = 16) -> bytes:
                 return AES._pkcs7_pad(data, block_size)
             
@@ -929,7 +934,6 @@ elif st.session_state['current_page'] == "Demo":
             
             if __name__ == "__main__":
                 main()
-
 
 
 
