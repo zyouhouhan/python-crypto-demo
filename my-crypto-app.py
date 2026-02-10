@@ -694,113 +694,112 @@ elif st.session_state['current_page'] == "AES":
 #=========================
 # --- 脆弱性デモ ページ ---
 #=========================
-
 elif st.session_state['current_page'] == "Demo":
-   tab_rsa, tab_aes = st.tabs(["RSA暗号", "AES暗号"])
+    tab_rsa, tab_aes = st.tabs(["RSA暗号", "AES暗号"])
 
     # ---------------------------
     # 【RSA攻撃タブ】
     # ---------------------------
-        with tab_rsa:
-            st.subheader("💥 RSA暗号攻撃デモ")
-            st.warning("⚠️ 公開鍵から秘密鍵を特定する実験です。")
+    with tab_rsa:
+        st.subheader("💥 RSA暗号攻撃デモ")
+        st.warning("⚠️ 公開鍵から秘密鍵を特定する実験です。")
         
-            if 'weak_keys' not in st.session_state:
-                st.session_state['weak_keys'] = None
+        if 'weak_keys' not in st.session_state:
+            st.session_state['weak_keys'] = None
         
-            weak_bits = st.number_input("RSA鍵長 (推奨: 16〜30)", min_value=8, max_value=32, value=16)
-            if st.button("脆弱な鍵ペアを生成"):
-                pub, priv, p, q, phi, gen_ms = generate_weak_keypair(weak_bits)
-                st.session_state['weak_keys'] = {"pub": pub, "priv": priv, "p": p, "q": q, "phi": phi, "gen_ms": gen_ms}
+        weak_bits = st.number_input("RSA鍵長 (推奨: 16〜30)", min_value=8, max_value=32, value=16)
+        if st.button("脆弱な鍵ペアを生成"):
+            pub, priv, p, q, phi, gen_ms = generate_weak_keypair(weak_bits)
+            st.session_state['weak_keys'] = {"pub": pub, "priv": priv, "p": p, "q": q, "phi": phi, "gen_ms": gen_ms}
         
-            if st.session_state['weak_keys']:
-                wk = st.session_state['weak_keys']
-                e, n = wk['pub']
-                st.info(f"公開鍵: e={e}, n={n}")
-                if st.button("攻撃開始 (Attack!)", type="primary"):
-                    status_area = st.empty()
-                    status_area.warning("🔍 秘密鍵を探索中... (素因数分解を実行中)")
-                    
-                    start_time = time.time()
-                    result = attack_from_public_key(e, n)
-                    total_ms = (time.time() - start_time) * 1000
-                    
-                    status_area.empty()
-                    if result["success"]:
-                        st.success(f"🎉 解読成功！ 秘密鍵 d = {result['d']}")
-                        st.balloons()
-                    else:
-                        st.error("攻撃に失敗しました。")
-    
-        # ---------------------------
-        # 【AES攻撃タブ】
-        # ---------------------------
-        with tab_aes:
-            st.subheader("AES攻撃デモ")
-            st.warning("⚠️ 短い鍵を全パターン試して解読する「総当たり攻撃」の実験です。")
-    
-            from typing import Tuple
-    
-            def pkcs7_pad(data: bytes, block_size: int = 16) -> bytes:
-                return AES._pkcs7_pad(data, block_size)
-    
-            def generate_plaintext(rand_bits: int) -> bytes:
-                if rand_bits == 0: return b''
-                rand_bytes_len = (rand_bits + 7) // 8
-                value = secrets.randbits(rand_bits)
-                if rand_bits > 0:
-                    value |= (1 << (rand_bits - 1))
-                return value.to_bytes(rand_bytes_len, 'big')
-    
-            def brute_force_search(aes: AES, cipher_bytes: bytes, plaintext_bytes: bytes,
-                                   key_size_bits: int, search_bits: int) -> Tuple[bytes, int]:
-                key_bytes_len = key_size_bits // 8
-                total = 1 << search_bits
-                padded = pkcs7_pad(plaintext_bytes, 16)
-                attempts = 0
-                for candidate_int in range(total):
-                    attempts += 1
-                    candidate_key = candidate_int.to_bytes(key_bytes_len, 'big')
-                    expanded = aes.key_expansion(candidate_key)
-                    out = bytearray()
-                    for i in range(0, len(padded), 16):
-                        block = list(padded[i:i + 16])
-                        out.extend(bytes(aes.encrypt_block(block, expanded)))
-                    if bytes(out) == cipher_bytes:
-                        return candidate_key, attempts
-                return None, attempts
-    
-            # メイン処理を直接実行する形に変更
-            aes_key_size = 128
-            search_bits = 14  # 重くならないよう少し調整
-            plaintext_bits = 64
-    
-            # 鍵と平文の準備
-            plaintext = generate_plaintext(plaintext_bits)
-            secret_int = secrets.randbits(search_bits)
-            secret_key = secret_int.to_bytes(aes_key_size // 8, 'big')
-    
-            aes = AES(aes_key_size)
-            expanded_secret = aes.key_expansion(secret_key)
-            padded_plain = pkcs7_pad(plaintext, 16)
-            
-            # 暗号文生成
-            cipher_out = bytearray()
-            for i in range(0, len(padded_plain), 16):
-                block = list(padded_plain[i:i + 16])
-                cipher_out.extend(bytes(aes.encrypt_block(block, expanded_secret)))
-            cipher = bytes(cipher_out)
-    
-            st.write(f"AES 鍵長: {aes_key_size} ビット / 総当たり対象: {search_bits} ビット")
-            
-            if st.button("総当たり攻撃を実行"):
-                with st.spinner("解析中..."):
-                    found_key, attempts = brute_force_search(aes, cipher, plaintext, aes_key_size, search_bits)
-                    if found_key:
-                        st.success(f"🔓 鍵を発見しました！: {found_key.hex()}")
-                        st.info(f"試行回数: {attempts}回")
-                    else:
-                        st.error("鍵は見つかりませんでした。")
+        if st.session_state['weak_keys']:
+            wk = st.session_state['weak_keys']
+            e, n = wk['pub']
+            st.info(f"公開鍵: e={e}, n={n}")
+            if st.button("攻撃開始 (Attack!)", type="primary"):
+                status_area = st.empty()
+                status_area.warning("🔍 秘密鍵を探索中... (素因数分解を実行中)")
+                
+                start_time = time.time()
+                result = attack_from_public_key(e, n)
+                total_ms = (time.time() - start_time) * 1000
+                
+                status_area.empty()
+                if result["success"]:
+                    st.success(f"🎉 解読成功！ 秘密鍵 d = {result['d']}")
+                    st.balloons()
+                else:
+                    st.error("攻撃に失敗しました。")
+
+    # ---------------------------
+    # 【AES攻撃タブ】
+    # ---------------------------
+    with tab_aes:
+        st.subheader("💥AES攻撃デモ")
+        st.warning("⚠️ 短い鍵を全パターン試して解読する「総当たり攻撃」の実験です。")
+
+        from typing import Tuple
+
+        def pkcs7_pad(data: bytes, block_size: int = 16) -> bytes:
+            return AES._pkcs7_pad(data, block_size)
+
+        def generate_plaintext(rand_bits: int) -> bytes:
+            if rand_bits == 0: return b''
+            rand_bytes_len = (rand_bits + 7) // 8
+            value = secrets.randbits(rand_bits)
+            if rand_bits > 0:
+                value |= (1 << (rand_bits - 1))
+            return value.to_bytes(rand_bytes_len, 'big')
+
+        def brute_force_search(aes: AES, cipher_bytes: bytes, plaintext_bytes: bytes,
+                               key_size_bits: int, search_bits: int) -> Tuple[bytes, int]:
+            key_bytes_len = key_size_bits // 8
+            total = 1 << search_bits
+            padded = pkcs7_pad(plaintext_bytes, 16)
+            attempts = 0
+            for candidate_int in range(total):
+                attempts += 1
+                candidate_key = candidate_int.to_bytes(key_bytes_len, 'big')
+                expanded = aes.key_expansion(candidate_key)
+                out = bytearray()
+                for i in range(0, len(padded), 16):
+                    block = list(padded[i:i + 16])
+                    out.extend(bytes(aes.encrypt_block(block, expanded)))
+                if bytes(out) == cipher_bytes:
+                    return candidate_key, attempts
+            return None, attempts
+
+        # 設定
+        aes_key_size = 128
+        search_bits = 14
+        plaintext_bits = 64
+
+        # 準備
+        plaintext = generate_plaintext(plaintext_bits)
+        secret_int = secrets.randbits(search_bits)
+        secret_key = secret_int.to_bytes(aes_key_size // 8, 'big')
+        aes = AES(aes_key_size)
+        
+        # 事前に暗号文を作っておく
+        expanded_secret = aes.key_expansion(secret_key)
+        padded_plain = pkcs7_pad(plaintext, 16)
+        cipher_out = bytearray()
+        for i in range(0, len(padded_plain), 16):
+            block = list(padded_plain[i:i + 16])
+            cipher_out.extend(bytes(aes.encrypt_block(block, expanded_secret)))
+        cipher = bytes(cipher_out)
+
+        st.write(f"AES 鍵長: {aes_key_size} ビット / 総当たり対象: {search_bits} ビット")
+        
+        if st.button("総当たり攻撃を実行"):
+            with st.spinner("解析中..."):
+                found_key, attempts = brute_force_search(aes, cipher, plaintext, aes_key_size, search_bits)
+                if found_key:
+                    st.success(f"🔓 鍵を発見しました！: {found_key.hex()}")
+                    st.info(f"試行回数: {attempts}回")
+                else:
+                    st.error("鍵は見つかりませんでした。")
+
 
 
 
