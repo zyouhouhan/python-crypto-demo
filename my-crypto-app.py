@@ -843,14 +843,9 @@ elif st.session_state['current_page'] == "Demo":
                     print("無効な入力です。再入力してください。")
 
         def main():
-            # argparse は Streamlit 上では衝突する可能性があるため、内部処理のみを想定
-            # ここではデフォルト値を用いてデモを動かす構成にしています
             aes_key_size = 128
-            search_bits = 16  # デモ用に固定（必要に応じて prompt_search_bits() に変更）
+            search_bits = 16 
             plaintext_bits = 64
-
-            st.write(f"AES 鍵長: {aes_key_size} ビット")
-            st.write(f"総当たり対象ビット数: {search_bits}（候補数: {1 << search_bits}）")
 
             plaintext = generate_plaintext(plaintext_bits)
             key_bytes_len = aes_key_size // 8
@@ -860,7 +855,22 @@ elif st.session_state['current_page'] == "Demo":
             secret_key = secret_int.to_bytes(key_bytes_len, 'big')
 
             aes = AES(aes_key_size)
-            cipher = aes.encrypt(plaintext, secret_key)
+
+            # --- ここから修正：aes.encrypt(...) を使わずに書く ---
+            # 1. 鍵を AES 用に展開する
+            expanded = aes.key_expansion(secret_key)
+            # 2. 平文を 16 バイトずつの塊に整える（パディング）
+            padded_plain = pkcs7_pad(plaintext, 16)
+            # 3. 16 バイトずつ暗号化してつなげる
+            cipher_out = bytearray()
+            for i in range(0, len(padded_plain), 16):
+                block = list(padded_plain[i:i + 16])
+                cipher_out.extend(bytes(aes.encrypt_block(block, expanded)))
+            cipher = bytes(cipher_out)
+            # --- ここまで修正 ---
+
+            st.write(f"AES 鍵長: {aes_key_size} ビット")
+            st.write(f"総当たり対象ビット数: {search_bits}")
 
             if st.button("総当たり検索実行"):
                 with st.spinner("検索中..."):
@@ -870,98 +880,5 @@ elif st.session_state['current_page'] == "Demo":
                         st.info(f"試行回数: {attempts}回")
                     else:
                         st.error("鍵は見つかりませんでした。")
-
-        # 実行
-        main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
