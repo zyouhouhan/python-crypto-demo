@@ -570,13 +570,13 @@ if st.session_state['current_page'] == "RSA":
         st.text_area("暗号文 (16進数表現)", st.session_state['rsa_cipher_show'], height=100)
     if 'rsa_decrypted' in st.session_state:
         st.success(f"復号された平文: {st.session_state['rsa_decrypted']}")
-
+        
+    st.divider()
     st.subheader("STEP3: イベント別計測結果")
     g_t = st.session_state.get('rsa_gen_time', 0.0)
     e_t = st.session_state.get('rsa_enc_time', 0.0)
     d_t = st.session_state.get('rsa_dec_time', 0.0)
-
-    st.divider()
+    
     c1, c2, c3 = st.columns(3)
     c1.metric("鍵生成", f"{g_t:.2f} ms")
     c2.metric("暗号化", f"{e_t:.2f} ms")
@@ -702,6 +702,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+
 
 
 
