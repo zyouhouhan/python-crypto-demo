@@ -632,7 +632,7 @@ elif st.session_state['current_page'] == "AES":
         
         st.divider()
         with col_aes_enc:
-        if st.button("AES 暗号化"):
+            if st.button("AES 暗号化"):
                 if aes_msg:
                     start_enc = time.time() # 計測開始
                     expanded_key = aes_obj.key_expansion(st.session_state['aes_key'])
@@ -719,6 +719,7 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
+
 
 
 
