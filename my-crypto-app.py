@@ -778,7 +778,35 @@ elif st.session_state['current_page'] == "Demo":
         plaintext_bits = 64
 
         # 準備
-        plaintext = generate_
+        plaintext = generate_plaintext(plaintext_bits)
+        secret_int = secrets.randbits(search_bits)
+        secret_key = secret_int.to_bytes(aes_key_size // 8, 'big')
+        aes_engine = AES(aes_key_size)
+        
+        expanded_secret = aes_engine.key_expansion(secret_key)
+        padded_plain = pkcs7_pad_local(plaintext, 16)
+        cipher_out = bytearray()
+        for i in range(0, len(padded_plain), 16):
+            block = list(padded_plain[i:i + 16])
+            cipher_out.extend(bytes(aes_engine.encrypt_block(block, expanded_secret)))
+        cipher = bytes(cipher_out)
+
+        st.write(f"AES 鍵長: {aes_key_size} ビット / 総当たり対象: {search_bits} ビット")
+        st.info(f"暗号文 (Ciphertext): {cipher.hex()}")
+        
+        if st.button("総当たり攻撃を実行", key="aes_final_attack"):
+            with st.spinner("この暗号文を解析中..."):
+                # --- AES計測開始 ---
+                start_aes = time.perf_counter()
+                found_key, attempts = brute_force_search(aes_engine, cipher, plaintext, aes_key_size, search_bits)
+                elapsed_aes = time.perf_counter() - start_aes
+                
+                if found_key:
+                    st.success(f"🔓 鍵を発見しました！: {found_key.hex()}")
+                    st.info(f"⏱️ 解析時間: {elapsed_aes:.3f} 秒 (試行回数: {attempts}回)")
+                else:
+                    st.error(f"鍵は見つかりませんでした。({elapsed_aes:.3f} 秒)")
+
 
 
 
