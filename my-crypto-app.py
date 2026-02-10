@@ -553,9 +553,8 @@ if st.session_state['current_page'] == "RSA":
         if st.button("暗号化 (Encrypt)"):
             if rsa_msg:
                 start_time = time.time()
-                encrypted_ints = rsa_encrypt(pub, rsa_msg)
+                st.session_state['rsa_cipher'] = rsa_encrypt(pub, rsa_msg)
                 st.session_state['rsa_enc_time'] = (time.time() - start_time) * 1000
-                st.session_state['rsa_cipher'] = encrypted_ints
                 st.session_state['rsa_cipher_show'] = "".join([f"{x:x}" for x in encrypted_ints])
 
     with col_dec:
@@ -715,6 +714,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+
 
 
 
