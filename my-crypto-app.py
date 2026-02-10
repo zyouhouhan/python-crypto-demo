@@ -547,7 +547,7 @@ if st.session_state['current_page'] == "RSA":
     st.divider()    
     st.subheader("STEP2: 暗号化・復号")
     rsa_msg = st.text_input("暗号化したいメッセージ (任意の文章を暗号化できます)", "Hello, RSA World!")
-
+    col_enc, col_dec = st.columns(2)
     with col_enc:
         if st.button("暗号化 (Encrypt)"):
             # ここで「保存されている鍵」があるかチェックし、直接取り出す
@@ -723,6 +723,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+
 
 
 
