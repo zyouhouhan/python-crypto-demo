@@ -548,14 +548,23 @@ if st.session_state['current_page'] == "RSA":
     st.subheader("STEP2: 暗号化・復号")
     rsa_msg = st.text_input("暗号化したいメッセージ (任意の文章を暗号化できます)", "Hello, RSA World!")
 
-    col_enc, col_dec = st.columns(2)
     with col_enc:
         if st.button("暗号化 (Encrypt)"):
-            if rsa_msg:
+            # ここで「保存されている鍵」があるかチェックし、直接取り出す
+            if st.session_state['rsa_keys'] and rsa_msg:
+                # pub と priv をその場で取り出す
+                pub_key, priv_key = st.session_state['rsa_keys']
+                
                 start_time = time.time()
-                st.session_state['rsa_cipher'] = rsa_encrypt(pub, rsa_msg)
+                # 取り出した pub_key を使う
+                st.session_state['rsa_cipher'] = rsa_encrypt(pub_key, rsa_msg)
+                
                 st.session_state['rsa_enc_time'] = (time.time() - start_time) * 1000
-                st.session_state['rsa_cipher_show'] = "".join([f"{x:x}" for x in encrypted_ints])
+                
+                # 前回の NameError 対策も合わせて修正（encrypted_ints を使わない）
+                st.session_state['rsa_cipher_show'] = "".join([f"{x:x}" for x in st.session_state['rsa_cipher']])
+            else:
+                st.error("鍵が生成されていないか、メッセージが空です。")
 
     with col_dec:
         if st.button("復号 (Decrypt)"):
@@ -714,6 +723,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+
 
 
 
