@@ -515,7 +515,7 @@ if st.session_state['current_page'] == "RSA":
     st.divider()
     st.header("🔑 RSA Encryption")
     st.info("素因数分解の困難性を利用した公開鍵暗号方式です。")
-    st.subheader("STEP1: 鍵ペアを作成")
+    st.subheader("STEP1: 鍵ペアを生成")
     if 'rsa_keys' not in st.session_state:
         st.session_state['rsa_keys'] = None
 
@@ -602,7 +602,7 @@ elif st.session_state['current_page'] == "AES":
     st.header("🛡️ AES Encryption")
     st.info("SPN構造を持つ、現在標準的な共通鍵暗号方式です。")
     
-    st.subheader("STEP1: 鍵ペアを作成")
+    st.subheader("STEP1: 鍵を生成")
     if 'aes_key' not in st.session_state:
         st.session_state['aes_key'] = None
     
@@ -719,6 +719,7 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
+
 
 
 
