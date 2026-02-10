@@ -622,6 +622,9 @@ elif st.session_state['current_page'] == "AES":
             st.session_state['aes_enc_time'] = 0.0
             st.session_state['aes_dec_time'] = 0.0
             st.rerun()
+        else:
+            st.info("鍵長を選択しランダム鍵生成をクリックしてください。")
+        
     st.subheader("STEP2: 暗号化/復号")        
     if st.session_state['aes_key']:
         st.success(f"現在の鍵: {st.session_state['aes_key'].hex()}")
@@ -661,8 +664,6 @@ elif st.session_state['current_page'] == "AES":
                 st.code(st.session_state['aes_cipher'].hex(), language="text")
         if 'aes_decrypted' in st.session_state:
                 st.success(f"復号結果: {st.session_state['aes_decrypted']}")
-    else:
-            st.info("鍵長を選択しランダム鍵生成をクリックしてください。")
             
     st.divider()
     st.subheader("STEP3: イベント別計測結果")
@@ -718,6 +719,7 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
+
 
 
 
