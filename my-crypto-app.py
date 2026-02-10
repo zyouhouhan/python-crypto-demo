@@ -746,194 +746,133 @@ elif st.session_state['current_page'] == "Demo":
         st.warning("⚠️ 短い鍵を全パターン試して解読する「総当たり攻撃」の実験です。")
 
         # 型ヒントのためのインポート（NameError対策）
-            from typing import Tuple
+        from typing import Tuple
 
-            def pkcs7_pad(data: bytes, block_size: int = 16) -> bytes:
-                return AES._pkcs7_pad(data, block_size)
-            
-            
-            def pkcs7_unpad(data: bytes) -> bytes:
-                return AES._pkcs7_unpad(data)
-            
-            
-            def generate_plaintext(rand_bits: int) -> bytes:
-                """rand_bits ビットの平文を生成（最上位ビットを 1 にして正確なビット長にする）"""
-                if rand_bits == 0:
-                    return b''
-                rand_bytes_len = (rand_bits + 7) // 8
-                value = secrets.randbits(rand_bits)
-                if rand_bits > 0:
-                    # 最上位ビットを立ててビット長を固定
-                    value |= (1 << (rand_bits - 1))
-                return value.to_bytes(rand_bytes_len, 'big')
-            
-            
-            def brute_force_search(aes: AES, cipher_bytes: bytes, plaintext_bytes: bytes,
-                                   key_size_bits: int, search_bits: int) -> Tuple[bytes, int]:
-                """
-                - search_bits: 試行する鍵のビット数（鍵の下位 search_bits ビットを総当たりする想定）
-                戻り値: (見つかった鍵または None, 試行回数)
-                """
-                key_bytes_len = key_size_bits // 8
-                total = 1 << search_bits
-                padded = pkcs7_pad(plaintext_bytes, 16)
-                start = time.perf_counter()
-                attempts = 0
-            
-                # 全候補を順に試す
-                report_interval = max(1, total // 20)
-                for candidate_int in range(total):
-                    attempts += 1
-                    candidate_key = candidate_int.to_bytes(key_bytes_len, 'big')
-                    expanded = aes.key_expansion(candidate_key)
-                    out = bytearray()
-                    for i in range(0, len(padded), 16):
-                        block = list(padded[i:i + 16])
-                        out.extend(bytes(aes.encrypt_block(block, expanded)))
-                    if bytes(out) == cipher_bytes:
-                        elapsed_ms = (time.perf_counter() - start) * 1000.0
-                        print(f"[+] 鍵を発見しました: 試行回数 {attempts} 回、経過時間 {elapsed_ms:.3f} ms")
-                        return candidate_key, attempts
-            
-                    if attempts % report_interval == 0:
-                        elapsed_ms = (time.perf_counter() - start) * 1000.0
-                        pct = attempts / total * 100.0
-                        print(f" 進捗: {attempts}/{total} ({pct:.2f}%)、経過時間 {elapsed_ms:.3f} ms")
-            
-                elapsed_ms = (time.perf_counter() - start) * 1000.0
-                print(f"[-] 鍵は見つかりませんでした: 試行回数 {attempts}、経過時間 {elapsed_ms:.3f} ms")
-                return None, attempts
-            
-            
-            def prompt_plaintext_bits(default_max: int) -> int:
-                """
-                ターミナルで対話的に平文ビット長を取得する。
-                ほんで数値 N -> 整数として使用（負数は0に、default_maxを超える場合はdefault_maxに補正）
-                """
-                while True:
-                    s = input(f"生成する平文のビット数を入力してください（数値 N / 'r'=ランダム / 空でランダム 0..{default_max}): ").strip().lower()
-                    if s == '' or s in ('r', 'random'):
-                        return secrets.randbelow(default_max + 1)
-                    try:
-                        n = int(s)
-                        if n < 0:
-                            print("注意: 負のビット数が指定されたため 0 に補正します。")
-                            return 0
-                        if n > default_max:
-                            print(f"注意: 指定ビット数が上限を超えているため {default_max} に補正します。")
-                            return default_max
-                        return n
-                    except ValueError:
-                        print("無効な入力です。再度入力してください（数値、'r'、または空を入力してください）。")
-            
-            
-            def prompt_search_bits(default_max: int = 30) -> int:
-                """
-                ターミナルで対話的に探索する鍵ビット数を取得する。
-                未入力/ 'r' は 1..default_max のランダム。1未満は1に、上限超えは上限に補正。
-                """
-                while True:
-                    s = input(f"探索する鍵ビット数を入力してください（数値N / 'r'=ランダム / 空欄でランダム 1..{default_max}）: ").strip().lower()
-                    if s == '' or s in ('r', 'random'):
-                        return secrets.randbelow(default_max) + 1
-                    try:
-                        n = int(s)
-                        if n < 1:
-                            print("注意: search-bits は 1 以上に補正されます。")
-                            return 1
-                        if n > default_max:
-                            print(f"注意: search-bits の上限 {default_max} に補正されます。")
-                            return default_max
-                        return n
-                    except ValueError:
-                        print("無効な入力です。再入力してください（数値 / 'r' / 空欄）")
-            
-            
-            def main():
-                parser = argparse.ArgumentParser(description="AES 総当たりデモ")
-                parser.add_argument("--aes-key-size", type=int, choices=[128, 192, 256], default=128,
-                                    help="AES 鍵長（ビット）: 128 / 192 / 256")
-                # 省略時は対話入力したいので default=None に変更
-                parser.add_argument("--search-bits", type=int, default=None,
-                                    help="総当たりする鍵のビット数（省略時は対話入力）")
-                parser.add_argument("--plaintext-bits", type=int, default=None,
-                                    help="生成する平文のビット数。省略時は対話的に入力（空/ r でランダム）")
-                parser.add_argument("--non-interactive", action='store_true',
-                                    help="対話入力を無効にしてランダムな値を使用する（CI / 自動実行向け）")
-            
-                args = parser.parse_args()
-                aes_key_size = args.aes_key_size
-            
-                # search_bits の決定（省略 -> 対話。ただし --non-interactive ならランダム）
-                if args.search_bits is None:
-                    if args.non_interactive:
-                        search_bits = secrets.randbelow(30) + 1
-                        print(f"非対話モード: search_bits をランダムに選択しました -> {search_bits}")
-                    else:
-                        search_bits = prompt_search_bits()
-                else:
-                    search_bits = args.search_bits
-            
-                if search_bits < 1:
-                    print("エラー: search-bits は 1 以上にしてください。")
-                    return
-                if search_bits > 30:
-                    print("警告: search-bits が 30 を超えると非常に遅くなります（テスト用に小さめを推奨）。")
-            
-                # 平文ビット数の決定: （省略 -> 対話。--non-interactive ならランダム）
-                if args.plaintext_bits is None:
-                    if args.non_interactive:
-                        plaintext_bits = secrets.randbelow(aes_key_size + 1)
-                        print(f"非対話モード: plaintext_bits をランダムに選択しました -> {plaintext_bits}")
-                    else:
-                        plaintext_bits = prompt_plaintext_bits(aes_key_size)
-                else:
-                    plaintext_bits = args.plaintext_bits
-            
-                if plaintext_bits < 0:
-                    print("注意: plaintext-bits が負のため 0 に補正します。")
-                    plaintext_bits = 0
-                if plaintext_bits > aes_key_size:
-                    print(f"注意: plaintext-bits が AES 鍵長を超えているため {aes_key_size} に補正します。")
-                    plaintext_bits = aes_key_size
-            
-                print(f"AES 鍵長: {aes_key_size} ビット（鍵バイト数 = {aes_key_size // 8}）")
-                print(f"総当たりするビット数 (search-bits): {search_bits}（候補数 = 2^{search_bits}）")
-                print(f"生成する平文のビット数: {plaintext_bits}")
-            
-                plaintext = generate_plaintext(plaintext_bits)
+        def pkcs7_pad(data: bytes, block_size: int = 16) -> bytes:
+            return AES._pkcs7_pad(data, block_size)
+
+        def pkcs7_unpad(data: bytes) -> bytes:
+            return AES._pkcs7_unpad(data)
+
+        def generate_plaintext(rand_bits: int) -> bytes:
+            """rand_bits ビットの平文を生成（最上位ビットを 1 にして正確なビット長にする）"""
+            if rand_bits == 0:
+                return b''
+            rand_bytes_len = (rand_bits + 7) // 8
+            value = secrets.randbits(rand_bits)
+            if rand_bits > 0:
+                # 最上位ビットを立ててビット長を固定
+                value |= (1 << (rand_bits - 1))
+            return value.to_bytes(rand_bytes_len, 'big')
+
+        def brute_force_search(aes: AES, cipher_bytes: bytes, plaintext_bytes: bytes,
+                               key_size_bits: int, search_bits: int) -> Tuple[bytes, int]:
+            """
+            - search_bits: 試行する鍵のビット数（鍵の下位 search_bits ビットを総当たりする想定）
+            戻り値: (見つかった鍵または None, 試行回数)
+            """
+            key_bytes_len = key_size_bits // 8
+            total = 1 << search_bits
+            padded = pkcs7_pad(plaintext_bytes, 16)
+            start = time.perf_counter()
+            attempts = 0
+
+            # 全候補を順に試す
+            report_interval = max(1, total // 20)
+            for candidate_int in range(total):
+                attempts += 1
+                candidate_key = candidate_int.to_bytes(key_bytes_len, 'big')
+                expanded = aes.key_expansion(candidate_key)
+                out = bytearray()
+                for i in range(0, len(padded), 16):
+                    block = list(padded[i:i + 16])
+                    out.extend(bytes(aes.encrypt_block(block, expanded)))
+                
+                if bytes(out) == cipher_bytes:
+                    elapsed_ms = (time.perf_counter() - start) * 1000.0
+                    print(f"[+] 鍵を発見しました: 試行回数 {attempts} 回、経過時間 {elapsed_ms:.3f} ms")
+                    return candidate_key, attempts
+
+                if attempts % report_interval == 0:
+                    elapsed_ms = (time.perf_counter() - start) * 1000.0
+                    pct = attempts / total * 100.0
+                    print(f" 進捗: {attempts}/{total} ({pct:.2f}%)、経過時間 {elapsed_ms:.3f} ms")
+
+            elapsed_ms = (time.perf_counter() - start) * 1000.0
+            print(f"[-] 鍵は見つかりませんでした: 試行回数 {attempts}、経過時間 {elapsed_ms:.3f} ms")
+            return None, attempts
+
+        def prompt_plaintext_bits(default_max: int) -> int:
+            """
+            ターミナルで対話的に平文ビット長を取得する。
+            """
+            while True:
+                s = input(f"生成する平文のビット数を入力してください（数値 N / 'r'=ランダム / 空でランダム 0..{default_max}): ").strip().lower()
+                if s == '' or s in ('r', 'random'):
+                    return secrets.randbelow(default_max + 1)
                 try:
-                    print("平文 (UTF-8):", plaintext.decode('utf-8'))
-                except Exception:
-                    print("平文 (UTF-8, replace):", plaintext.decode('utf-8', errors='replace'))
-                print(f"平文の長さ: {len(plaintext)} バイト")
-            
-                key_bytes_len = aes_key_size // 8
-            
-                # 秘密鍵: 探索対象の下位 search_bits をランダムにし、残りはゼロにする（デモ目的）
-                secret_int = secrets.randbits(search_bits)
-                secret_key = secret_int.to_bytes(key_bytes_len, 'big')
-                print("（デモ用）秘密鍵 (hex):", secret_key.hex())
-            
-                aes = AES(aes_key_size)
-                cipher = aes.encrypt(plaintext, secret_key)
-                print(f"暗号文の長さ: {len(cipher)} バイト")
-            
-                print("\n--- 総当たり検索を開始します ---")
-                found_key, attempts = brute_force_search(aes, cipher, plaintext, aes_key_size, search_bits)
-            
-                if found_key is None:
-                    print("結果: 鍵は見つかりませんでした。")
-                else:
-                    print("結果: 見つかった鍵 (hex):", found_key.hex())
-                    if found_key == secret_key:
-                        print("成功: 発見した鍵は秘密鍵と一致しました。")
+                    n = int(s)
+                    if n < 0:
+                        print("注意: 負のビット数が指定されたため 0 に補正します。")
+                        return 0
+                    if n > default_max:
+                        print(f"注意: 指定ビット数が上限を超えているため {default_max} に補正します。")
+                        return default_max
+                    return n
+                except ValueError:
+                    print("無効な入力です。再度入力してください。")
+
+        def prompt_search_bits(default_max: int = 30) -> int:
+            """
+            ターミナルで対話的に探索する鍵ビット数を取得する。
+            """
+            while True:
+                s = input(f"探索する鍵ビット数を入力してください（数値N / 'r'=ランダム / 空欄でランダム 1..{default_max}）: ").strip().lower()
+                if s == '' or s in ('r', 'random'):
+                    return secrets.randbelow(default_max) + 1
+                try:
+                    n = int(s)
+                    if n < 1:
+                        print("注意: search-bits は 1 以上に補正されます。")
+                        return 1
+                    if n > default_max:
+                        print(f"注意: search-bits の上限 {default_max} に補正されます。")
+                        return default_max
+                    return n
+                except ValueError:
+                    print("無効な入力です。再入力してください。")
+
+        def main():
+            # argparse は Streamlit 上では衝突する可能性があるため、内部処理のみを想定
+            # ここではデフォルト値を用いてデモを動かす構成にしています
+            aes_key_size = 128
+            search_bits = 16  # デモ用に固定（必要に応じて prompt_search_bits() に変更）
+            plaintext_bits = 64
+
+            st.write(f"AES 鍵長: {aes_key_size} ビット")
+            st.write(f"総当たり対象ビット数: {search_bits}（候補数: {1 << search_bits}）")
+
+            plaintext = generate_plaintext(plaintext_bits)
+            key_bytes_len = aes_key_size // 8
+
+            # デモ用秘密鍵
+            secret_int = secrets.randbits(search_bits)
+            secret_key = secret_int.to_bytes(key_bytes_len, 'big')
+
+            aes = AES(aes_key_size)
+            cipher = aes.encrypt(plaintext, secret_key)
+
+            if st.button("総当たり検索実行"):
+                with st.spinner("検索中..."):
+                    found_key, attempts = brute_force_search(aes, cipher, plaintext, aes_key_size, search_bits)
+                    if found_key:
+                        st.success(f"鍵を発見しました！: {found_key.hex()}")
+                        st.info(f"試行回数: {attempts}回")
                     else:
-                        print("注意: 発見した鍵が秘密鍵と一致しません。")
-            
-            
-            if __name__ == "__main__":
-                main()
+                        st.error("鍵は見つかりませんでした。")
+
+        # 実行
+        main()
 
 
 
