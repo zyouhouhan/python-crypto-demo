@@ -512,7 +512,6 @@ with st.sidebar:
 #===================
 
 if st.session_state['current_page'] == "RSA":
-    st.divider()
     st.header("🔑 RSA Encryption")
     st.info("素因数分解の困難性を利用した公開鍵暗号方式です。")
     st.subheader("STEP1: 鍵ペアを生成")
@@ -719,6 +718,7 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
+
 
 
 
