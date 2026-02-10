@@ -615,6 +615,7 @@ elif st.session_state['current_page'] == "AES":
             start_gen = time.time()
             st.session_state['aes_key'] = secrets.token_bytes(aes_bits // 8)
             st.session_state['aes_gen_time'] = (time.time() - start_gen) * 1000 # AES用の変数に保存
+            
             # 新しい鍵を生成すると古い結果をリセットする
             if 'aes_cipher' in st.session_state: del st.session_state['aes_cipher']
             if 'aes_decrypted' in st.session_state: del st.session_state['aes_decrypted']
@@ -622,7 +623,6 @@ elif st.session_state['current_page'] == "AES":
             st.session_state['aes_dec_time'] = 0.0
             st.rerun()
             
-    st.warning("鍵長を選択しランダム鍵生成をクリックしてください。")
     if st.session_state['aes_key']:
         st.success(f"現在の鍵: {st.session_state['aes_key'].hex()}")
         st.divider()
@@ -630,7 +630,10 @@ elif st.session_state['current_page'] == "AES":
         
         col_aes_enc, col_aes_dec = st.columns(2)
         aes_obj = AES(aes_bits)
-
+    else:
+            st.info("鍵長を選択しランダム鍵生成をクリックしてください。")
+        
+    st.divider()
         with col_aes_enc:
             if st.button("AES 暗号化"):
                 if aes_msg:
@@ -717,6 +720,7 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
+
 
 
 
