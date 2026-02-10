@@ -615,7 +615,13 @@ elif st.session_state['current_page'] == "AES":
             start_gen = time.time()
             st.session_state['aes_key'] = secrets.token_bytes(aes_bits // 8)
             st.session_state['aes_gen_time'] = (time.time() - start_gen) * 1000 # AES用の変数に保存
+            # 新しい鍵を生成すると古い結果をリセットする
+            if 'aes_cipher' in st.session_state: del st.session_state['aes_cipher']
+            if 'aes_decrypted' in st.session_state: del st.session_state['aes_decrypted']
+            st.session_state['aes_enc_time'] = 0.0
+            st.session_state['aes_dec_time'] = 0.0
             st.rerun()
+            
     st.warning("鍵長を選択しランダム鍵生成をクリックしてください。")
     if st.session_state['aes_key']:
         st.success(f"現在の鍵: {st.session_state['aes_key'].hex()}")
@@ -656,6 +662,7 @@ elif st.session_state['current_page'] == "AES":
             st.code(st.session_state['aes_cipher'].hex(), language="text")
         if 'aes_decrypted' in st.session_state:
             st.success(f"復号結果: {st.session_state['aes_decrypted']}")
+            
         st.divider()
         st.subheader("STEP3: イベント別計測結果")
         ga_t = st.session_state.get('aes_gen_time', 0.0)
@@ -710,29 +717,6 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
-            
-#===========================
-# --- 処理時間計測 ページ ---
-#===========================
-
-elif st.session_state['current_page'] == "Time":
-    st.header("⏱ イベント別計測結果")
-    g_t = st.session_state.get('rsa_gen_time', 0.0)
-    e_t = st.session_state.get('rsa_enc_time', 0.0)
-    d_t = st.session_state.get('rsa_dec_time', 0.0)
-
-    c1, c2, c3 = st.columns(3)
-    c1.metric("鍵生成", f"{g_t:.2f} ms")
-    c2.metric("暗号化", f"{e_t:.2f} ms")
-    c3.metric("復号", f"{d_t:.2f} ms")
-
-    st.divider()
-    st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
-
-
-
-
-
 
 
 
