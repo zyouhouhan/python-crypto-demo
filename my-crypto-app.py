@@ -576,7 +576,8 @@ if st.session_state['current_page'] == "RSA":
     
         if 'rsa_cipher_show' in st.session_state:
             st.text_area("暗号文 (16進数表現)", st.session_state['rsa_cipher_show'], height=100)
-            st.info("この暗号文は、入力されている平文をRSA暗号を用いて暗号化したものです。\nこの暗号文から第三者が平文を簡単に予測することは不可能です。")
+            st.info("""この暗号文は、入力されている平文をRSA暗号を用いて暗号化したものです。
+            この暗号文から第三者が平文を簡単に予測することは不可能です。""")
         if 'rsa_decrypted' in st.session_state:
             st.success(f"復号された平文: {st.session_state['rsa_decrypted']}")
         
@@ -720,6 +721,7 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
+
 
 
 
