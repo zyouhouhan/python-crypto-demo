@@ -654,8 +654,8 @@ elif st.session_state['current_page'] == "AES":
                 st.session_state['aes_enc_time'] = (time.time() - start_enc) * 1000 # AES用の変数に保存
                 
     with col_aes_dec:
-        if st.button("AES 復号"):
-            if 'aes_cipher' in st.session_state:
+       if 'aes_cipher' in st.session_state:
+            if st.button("AES 復号"):
                 start_dec = time.time() # 計測開始
                 expanded_key = aes_obj.key_expansion(st.session_state['aes_key'])
                 cipher_data = st.session_state['aes_cipher']
@@ -731,6 +731,7 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
+
 
 
 
