@@ -545,8 +545,8 @@ if st.session_state['current_page'] == "RSA":
     else:
         st.warning("鍵のビット長を選択し、鍵ペアを生成してください。")
         
+    st.divider()    
     st.subheader("STEP2: 暗号化・復号")
-    st.divider()
     rsa_msg = st.text_input("暗号化したいメッセージ (RSA)", "Hello, RSA World!")
 
     col_enc, col_dec = st.columns(2)
@@ -689,6 +689,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+
 
 
 
