@@ -524,7 +524,6 @@ if st.session_state['current_page'] == "RSA":
         bits = st.selectbox("鍵のビット長 (大きいほど安全ですが遅くなります)", [512, 1024, 2048], index=1)
     with col2:
         st.write("")
-        st.write("")
     if st.button("鍵ペアを生成"):
             start_time = time.time()
             st.session_state['rsa_keys'] = generate_rsa_keypair(bits)
@@ -719,6 +718,7 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
+
 
 
 
