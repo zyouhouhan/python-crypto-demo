@@ -574,15 +574,15 @@ if st.session_state['current_page'] == "RSA":
                         st.session_state['rsa_dec_time'] = (time.time() - start_time) * 1000
                         st.session_state['rsa_decrypted'] = decrypted_text
     
-        if 'rsa_cipher_show' in st.session_state:
-            st.text_area("暗号文 (16進数表現)", st.session_state['rsa_cipher_show'], height=100)
-            st.info("""
-            この暗号文は、入力されている平文をRSA暗号を用いて暗号化したものです。
+    if 'rsa_cipher_show' in st.session_state:
+        st.text_area("暗号文 (16進数表現)", st.session_state['rsa_cipher_show'], height=100)
+        st.info("""
+        この暗号文は、入力されている平文をRSA暗号を用いて暗号化したものです。
             
-            この暗号文から第三者が平文を簡単に予測することは不可能です。
-            """)
-        if 'rsa_decrypted' in st.session_state:
-            st.success(f"復号された平文: {st.session_state['rsa_decrypted']}")
+        この暗号文から第三者が平文を簡単に予測することは不可能です。
+        """)
+    if 'rsa_decrypted' in st.session_state:
+        st.success(f"復号された平文: {st.session_state['rsa_decrypted']}")
         
     st.divider()
     st.subheader("STEP3: イベント別計測結果")
@@ -651,6 +651,7 @@ elif st.session_state['current_page'] == "AES":
                     out.extend(bytes(enc_block))
                 st.session_state['aes_cipher'] = bytes(out)
                 st.session_state['aes_enc_time'] = (time.time() - start_enc) * 1000 # AES用の変数に保存
+                
     with col_aes_dec:
         if st.button("AES 復号"):
             if 'aes_cipher' in st.session_state:
@@ -667,6 +668,11 @@ elif st.session_state['current_page'] == "AES":
 
     if 'aes_cipher' in st.session_state:
                 st.code(st.session_state['aes_cipher'].hex(), language="text")
+                st.info("""
+                    この暗号文は、入力されている平文をAES暗号を用いて暗号化したものです。
+                    
+                    この暗号文から第三者が平文を簡単に予測することは不可能です。
+                    """)
     if 'aes_decrypted' in st.session_state:
                 st.success(f"復号結果: {st.session_state['aes_decrypted']}")
             
@@ -724,6 +730,7 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
+
 
 
 
