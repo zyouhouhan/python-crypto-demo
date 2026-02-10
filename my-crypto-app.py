@@ -610,7 +610,6 @@ elif st.session_state['current_page'] == "AES":
         key_input = st.text_input("秘密鍵 (Hex)", value="" if not st.session_state['aes_key'] else st.session_state['aes_key'].hex())
     with col_a2:
         st.write("")
-        st.write("")
         if st.button("ランダム鍵生成"):
             start_gen = time.time()
             st.session_state['aes_key'] = secrets.token_bytes(aes_bits // 8)
@@ -720,6 +719,7 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
+
 
 
 
