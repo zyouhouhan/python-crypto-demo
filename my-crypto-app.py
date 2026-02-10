@@ -668,17 +668,17 @@ elif st.session_state['current_page'] == "AES":
             
     st.divider()
     st.subheader("STEP3: イベント別計測結果")
-        ga_t = st.session_state.get('aes_gen_time', 0.0)
-        ea_t = st.session_state.get('aes_enc_time', 0.0)
-        da_t = st.session_state.get('aes_dec_time', 0.0)
+    ga_t = st.session_state.get('aes_gen_time', 0.0)
+    ea_t = st.session_state.get('aes_enc_time', 0.0)
+    da_t = st.session_state.get('aes_dec_time', 0.0)
     
-        c1, c2, c3 = st.columns(3)
-        c1.metric("鍵生成", f"{ga_t:.2f} ms")
-        c2.metric("暗号化", f"{ea_t:.2f} ms")
-        c3.metric("復号", f"{da_t:.2f} ms")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("鍵生成", f"{ga_t:.2f} ms")
+    c2.metric("暗号化", f"{ea_t:.2f} ms")
+    c3.metric("復号", f"{da_t:.2f} ms")
         
-        st.divider()
-        st.info(f"合計処理時間: **{ga_t + ea_t + da_t:.2f} ミリ秒**")
+    st.divider()
+    st.info(f"合計処理時間: **{ga_t + ea_t + da_t:.2f} ミリ秒**")
 
 #=========================
 # --- 脆弱性デモ ページ ---
@@ -720,6 +720,7 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
+
 
 
 
