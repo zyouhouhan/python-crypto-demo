@@ -515,7 +515,7 @@ with st.sidebar:
 if st.session_state['current_page'] == "RSA":
     st.header("🔑 RSA Encryption")
     st.info("素因数分解の困難性を利用した公開鍵暗号方式です。")
-    st.subheader("ステップ 1: 鍵ペアを作成する")
+    st.subheader("STEP1: 鍵ペアを作成")
     if 'rsa_keys' not in st.session_state:
         st.session_state['rsa_keys'] = None
 
@@ -545,7 +545,7 @@ if st.session_state['current_page'] == "RSA":
     else:
         st.warning("鍵のビット長を選択し、鍵ペアを生成してください。")
         
-    st.subheader("ステップ 2: 暗号化を試す")
+    st.subheader("STEP2: 暗号化・復号")
     st.divider()
     rsa_msg = st.text_input("暗号化したいメッセージ (RSA)", "Hello, RSA World!")
 
@@ -689,6 +689,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+
 
 
 
