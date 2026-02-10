@@ -565,22 +565,23 @@ if st.session_state['current_page'] == "RSA":
             else:
                 st.error("鍵が生成されていないか、メッセージが空です。")
                 
-        with col_dec:
-            if 'rsa_cipher' in st.session_state:
-                if st.button("復号 (Decrypt)"):
-                    if 'rsa_cipher' in st.session_state:
-                        start_time = time.time()
-                        decrypted_text = rsa_decrypt(priv, st.session_state['rsa_cipher'])
-                        st.session_state['rsa_dec_time'] = (time.time() - start_time) * 1000
-                        st.session_state['rsa_decrypted'] = decrypted_text
-    
-    if 'rsa_cipher_show' in st.session_state:
+        if 'rsa_cipher_show' in st.session_state:
         st.text_area("暗号文 (16進数表現)", st.session_state['rsa_cipher_show'], height=100)
         st.info("""
         この暗号文は、入力されている平文をRSA暗号を用いて暗号化したものです。
             
         この暗号文から第三者が平文を簡単に予測することは不可能です。
         """)
+                
+    with col_dec:
+        if 'rsa_cipher' in st.session_state:
+            if st.button("復号 (Decrypt)"):
+                if 'rsa_cipher' in st.session_state:
+                    start_time = time.time()
+                    decrypted_text = rsa_decrypt(priv, st.session_state['rsa_cipher'])
+                    st.session_state['rsa_dec_time'] = (time.time() - start_time) * 1000
+                    st.session_state['rsa_decrypted'] = decrypted_text
+    
     if 'rsa_decrypted' in st.session_state:
         st.success(f"復号された平文: {st.session_state['rsa_decrypted']}")
         
@@ -730,6 +731,7 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
+
 
 
 
