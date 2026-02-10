@@ -595,7 +595,7 @@ elif st.session_state['current_page'] == "AES":
 
     if 'aes_key' not in st.session_state:
         st.session_state['aes_key'] = None
-    st.write("鍵長を選択しランダム鍵生成をクリックしてください")
+    
     aes_bits = st.selectbox("AES鍵長", [128, 192, 256])
     col_a1, col_a2 = st.columns([3, 1])
     with col_a1:
@@ -606,7 +606,7 @@ elif st.session_state['current_page'] == "AES":
         if st.button("ランダム鍵生成"):
             st.session_state['aes_key'] = secrets.token_bytes(aes_bits // 8)
             st.rerun()
-
+    st.warning("鍵長を選択しランダム鍵生成をクリックしてください。")
     if st.session_state['aes_key']:
         st.success(f"現在の鍵: {st.session_state['aes_key'].hex()}")
         st.divider()
@@ -715,6 +715,7 @@ elif st.session_state['current_page'] == "Time":
 
     st.divider()
     st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+
 
 
 
