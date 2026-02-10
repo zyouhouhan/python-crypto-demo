@@ -629,12 +629,10 @@ elif st.session_state['current_page'] == "AES":
         
         col_aes_enc, col_aes_dec = st.columns(2)
         aes_obj = AES(aes_bits)
-    else:
-            st.info("鍵長を選択しランダム鍵生成をクリックしてください。")
         
-    st.divider()
-    with col_aes_enc:
-            if st.button("AES 暗号化"):
+        st.divider()
+        with col_aes_enc:
+        if st.button("AES 暗号化"):
                 if aes_msg:
                     start_enc = time.time() # 計測開始
                     expanded_key = aes_obj.key_expansion(st.session_state['aes_key'])
@@ -646,7 +644,7 @@ elif st.session_state['current_page'] == "AES":
                         out.extend(bytes(enc_block))
                     st.session_state['aes_cipher'] = bytes(out)
                     st.session_state['aes_enc_time'] = (time.time() - start_enc) * 1000 # AES用の変数に保存
-    with col_aes_dec:
+        with col_aes_dec:
             if st.button("AES 復号"):
                 if 'aes_cipher' in st.session_state:
                     start_dec = time.time() # 計測開始
@@ -660,10 +658,12 @@ elif st.session_state['current_page'] == "AES":
                     st.session_state['aes_decrypted'] = pkcs7_unpad(out).decode('utf-8')
                     st.session_state['aes_dec_time'] = (time.time() - start_dec) * 1000 # AES用の変数に保存
 
-    if 'aes_cipher' in st.session_state:
-            st.code(st.session_state['aes_cipher'].hex(), language="text")
-    if 'aes_decrypted' in st.session_state:
-            st.success(f"復号結果: {st.session_state['aes_decrypted']}")
+        if 'aes_cipher' in st.session_state:
+                st.code(st.session_state['aes_cipher'].hex(), language="text")
+        if 'aes_decrypted' in st.session_state:
+                st.success(f"復号結果: {st.session_state['aes_decrypted']}")
+    else:
+            st.info("鍵長を選択しランダム鍵生成をクリックしてください。")
             
     st.divider()
     st.subheader("STEP3: イベント別計測結果")
@@ -719,6 +719,7 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
+
 
 
 
