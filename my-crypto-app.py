@@ -545,7 +545,7 @@ if st.session_state['current_page'] == "RSA":
         st.info("鍵のビット長を選択し、鍵ペアを生成してください。")
         
     st.divider()    
-    st.subheader("STEP2: 暗号化・復号")
+    st.subheader("STEP2: 暗号化/復号")
     rsa_msg = st.text_input("暗号化したいメッセージ (任意の文章を暗号化できます)", "Hello, RSA World!")
     col_enc, col_dec = st.columns(2)
     with col_enc:
@@ -622,7 +622,7 @@ elif st.session_state['current_page'] == "AES":
             st.session_state['aes_enc_time'] = 0.0
             st.session_state['aes_dec_time'] = 0.0
             st.rerun()
-            
+    st.subheader("STEP2: 暗号化/復号")        
     if st.session_state['aes_key']:
         st.success(f"現在の鍵: {st.session_state['aes_key'].hex()}")
         st.divider()
@@ -718,6 +718,7 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
+
 
 
 
