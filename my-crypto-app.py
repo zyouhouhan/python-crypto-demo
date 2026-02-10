@@ -629,8 +629,6 @@ elif st.session_state['current_page'] == "AES":
         
         col_aes_enc, col_aes_dec = st.columns(2)
         aes_obj = AES(aes_bits)
-        
-        st.divider()
         with col_aes_enc:
             if st.button("AES 暗号化"):
                 if aes_msg:
@@ -719,6 +717,7 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
+
 
 
 
