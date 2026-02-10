@@ -653,6 +653,14 @@ elif st.session_state['current_page'] == "AES":
                 st.session_state['aes_cipher'] = bytes(out)
                 st.session_state['aes_enc_time'] = (time.time() - start_enc) * 1000 # AES用の変数に保存
                 
+                if 'aes_cipher' in st.session_state:
+                st.code(st.session_state['aes_cipher'].hex(), language="text")
+                st.info("""
+                    この暗号文は、入力されている平文をAES暗号を用いて暗号化したものです。
+                    
+                    この暗号文から第三者が平文を簡単に予測することは不可能です。
+                    """)
+                
     with col_aes_dec:
        if 'aes_cipher' in st.session_state:
             if st.button("AES 復号"):
@@ -666,14 +674,6 @@ elif st.session_state['current_page'] == "AES":
                     out.extend(bytes(dec_block))
                 st.session_state['aes_decrypted'] = pkcs7_unpad(out).decode('utf-8')
                 st.session_state['aes_dec_time'] = (time.time() - start_dec) * 1000 # AES用の変数に保存
-
-    if 'aes_cipher' in st.session_state:
-                st.code(st.session_state['aes_cipher'].hex(), language="text")
-                st.info("""
-                    この暗号文は、入力されている平文をAES暗号を用いて暗号化したものです。
-                    
-                    この暗号文から第三者が平文を簡単に予測することは不可能です。
-                    """)
     if 'aes_decrypted' in st.session_state:
                 st.success(f"復号結果: {st.session_state['aes_decrypted']}")
             
@@ -731,6 +731,7 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
+
 
 
 
