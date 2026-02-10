@@ -696,7 +696,8 @@ elif st.session_state['current_page'] == "AES":
 #=========================
 
 elif st.session_state['current_page'] == "Demo":
-    st.header("💥 RSA完全攻撃デモ")
+    tab_rsa, tab_aes = st.tabs(["RSA攻撃 (素因数分解)", "AES攻撃 (ブルートフォース)"])
+    st.header("💥 RSA攻撃デモ")
     st.warning("⚠️ 公開鍵から秘密鍵を特定する実験です。")
 
     if 'weak_keys' not in st.session_state:
@@ -731,6 +732,7 @@ elif st.session_state['current_page'] == "Demo":
                 st.balloons()
             else:
                 st.error("攻撃に失敗しました。")
+
 
 
 
