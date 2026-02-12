@@ -1,4 +1,6 @@
 import streamlit as st
+import pandas as pd
+import plotly.express as px
 import secrets
 import time
 import math
@@ -885,6 +887,7 @@ elif st.session_state['current_page'] == "Compare":
         - **AES (総当たり):** 鍵の候補を1つずつ試す力任せの攻撃です。**1ビット増えるごとに計算時間が正確に2倍**になる指数関数的な増加を体感できます。
         - **デモでの注意:** デモ用の短い鍵（16-24bit）は数秒で解読できますが、実際の128bitや2048bitは、現代のスーパーコンピュータを何兆年動かしても解読できないほど巨大な数値です。
         """)
+
 
 
 
