@@ -489,6 +489,10 @@ st.divider()
 if 'current_page' not in st.session_state:
     st.session_state['current_page'] = "RSA"
 
+# アプリの最初の方で初期化
+if 'attack_history' not in st.session_state:
+    st.session_state['attack_history'] = []
+    
 # 2. サイドバーをナビゲーションメニューにする
 with st.sidebar:
     st.markdown("---")
@@ -498,11 +502,11 @@ with st.sidebar:
         st.session_state['current_page'] = "RSA"
     if st.button("🛡️ AES (共通鍵暗号)", use_container_width=True):
         st.session_state['current_page'] = "AES"
-    if st.button("💥 脆弱性デモ", use_container_width=True):
+    if st.button("💥 RSA 脆弱性デモ", use_container_width=True):
         st.session_state['current_page'] = "Demo"
     if st.button("💥 AES 脆弱性デモ", use_container_width=True):
         st.session_state['current_page'] = "Demo_AES"
-    if st.button("📊 攻撃比較グラフ", use_container_width=True):
+    if st.button("📊 安全性比較グラフ", use_container_width=True):
         st.session_state['current_page'] = "Compare"
 
 # ==========================================
@@ -693,166 +697,195 @@ elif st.session_state['current_page'] == "AES":
     st.divider()
     st.info(f"合計処理時間: **{ga_t + ea_t + da_t:.2f} ミリ秒**")
 
-#=========================
-# --- 脆弱性デモ ページ ---
-#=========================
-elif st.session_state['current_page'] == "Demo":
-    tab_rsa, tab_aes = st.tabs(["RSA暗号", "AES暗号"])
-
-    # ---------------------------
-    # 【RSA攻撃タブ】
-    # ---------------------------
-    with tab_rsa:
-        st.subheader("💥 RSA暗号攻撃デモ")
-        st.warning("⚠️ 公開鍵から秘密鍵を特定する実験です。")
-        
-        if 'weak_keys' not in st.session_state:
-            st.session_state['weak_keys'] = None
-        
+#=============================
+# --- RSA脆弱性デモ ページ ---
+#=============================
+elif st.session_state['current_page'] == "Demo_RSA":
+    st.header("🔑 RSA脆弱性デモ (素因数分解攻撃)")
+    st.warning("⚠️ 公開鍵から秘密鍵を特定する実験です。")
+    
+    if 'weak_keys' not in st.session_state:
+        st.session_state['weak_keys'] = None
+    
+    # 設定エリア
+    col_set1, col_set2 = st.columns([2, 1])
+    with col_set1:
         weak_bits = st.number_input("RSA鍵長 (推奨: 16〜30)", min_value=8, max_value=32, value=16)
+    with col_set2:
+        st.write("")
         if st.button("脆弱な鍵ペアを生成"):
             pub, priv, p, q, phi, gen_ms = generate_weak_keypair(weak_bits)
-            st.session_state['weak_keys'] = {"pub": pub, "priv": priv, "p": p, "q": q, "phi": phi, "gen_ms": gen_ms}
+            st.session_state['weak_keys'] = {"pub": pub, "priv": priv, "p": p, "q": q, "phi": phi, "gen_ms": gen_ms, "bits": weak_bits}
+    
+    if st.session_state['weak_keys']:
+        wk = st.session_state['weak_keys']
+        e, n = wk['pub']
         
-        if st.session_state['weak_keys']:
-            wk = st.session_state['weak_keys']
-            e, n = wk['pub']
-            st.info(f"公開鍵: e={e}, n={n}")
-            if st.button("攻撃開始 (Attack!)", type="primary"):
-                status_area = st.empty()
-                status_area.warning("🔍 秘密鍵を探索中... (素因数分解を実行中)")
-                
-                # --- RSA計測開始 ---
-                start_time = time.perf_counter() 
-                result = attack_from_public_key(e, n)
-                elapsed_time = time.perf_counter() - start_time
-                
-                status_area.empty()
-                if result["success"]:
-                    st.success(f"🎉 解読成功！ 秘密鍵 d = {result['d']}")
-                    st.info(f"⏱️ 解読時間: {elapsed_time:.3f} 秒")
-                    st.balloons()
-                else:
-                    st.error("攻撃に失敗しました。")
-
-    # ---------------------------
-    # 【AES攻撃タブ】
-    # ---------------------------
-    with tab_aes:
-        st.subheader("💥 AES 総当たり攻撃デモ")
-        st.warning("⚠️ 鍵の一部（または全部）を全パターン試して解読する実験です。")
-
-        # --- ヘルパー関数の定義 ---
-        from typing import Tuple
-        def pkcs7_pad_local(data: bytes, block_size: int = 16) -> bytes:
-            pad_len = block_size - (len(data) % block_size)
-            return data + bytes([pad_len] * pad_len)
-
-        def brute_force_search(aes_obj, cipher_bytes: bytes, plaintext_bytes: bytes, 
-                               key_size_bits: int, search_bits: int):
-            key_bytes_len = key_size_bits // 8
-            total_patterns = 1 << search_bits
-            padded_plain = pkcs7_pad_local(plaintext_bytes, 16)
-            attempts = 0
-            
-            for candidate_int in range(total_patterns):
-                attempts += 1
-                # 候補となる鍵を生成
-                candidate_key = candidate_int.to_bytes(key_bytes_len, 'big')
-                expanded = aes_obj.key_expansion(candidate_key)
-                
-                # 暗号化して一致するか確認
-                out = bytearray()
-                for i in range(0, len(padded_plain), 16):
-                    block = list(padded_plain[i:i + 16])
-                    out.extend(bytes(aes_obj.encrypt_block(block, expanded)))
-                
-                if bytes(out) == cipher_bytes:
-                    return candidate_key, attempts
-            return None, attempts
-
-        # --- STEP 1: 設定 ---
-        st.divider()
-        st.subheader("STEP1: 攻撃対象の設定")
-        col_cfg1, col_cfg2 = st.columns(2)
-        with col_cfg1:
-            target_search_bits = st.slider("総当たりの探索ビット数", 8, 20, 14, 
-                                           help="ビット数が大きいほど、解読に時間がかかります。")
-            st.info(f"試行回数: 2の{target_search_bits}乗 = **{1 << target_search_bits} 回**")
-        with col_cfg2:
-            aes_mode = st.selectbox("ベースとなるAES鍵長", [128, 192, 256], index=0)
-
-        # --- STEP 2: ターゲット生成 ---
-        st.divider()
-        st.subheader("STEP2: ターゲット暗号文の作成")
-        attack_msg = st.text_input("解読対象のメッセージ", "Secret123", key="aes_attack_input")
+        st.info(f"現在の公開鍵 (n): {n} ({wk['bits']} bit)")
         
-        if st.button("攻撃対象（暗号文）を生成"):
-            # 探索ビット数に合わせた秘密鍵をランダム生成
-            secret_int = secrets.randbelow(1 << target_search_bits)
-            secret_key = secret_int.to_bytes(aes_mode // 8, 'big')
+        if st.button("攻撃開始 (Attack!)", type="primary"):
+            status_area = st.empty()
+            status_area.warning("🔍 秘密鍵を探索中... (素因数分解を実行中)")
             
-            # 暗号化
-            aes_engine = AES(aes_mode)
-            expanded_secret = aes_engine.key_expansion(secret_key)
-            padded_msg = pkcs7_pad_local(attack_msg.encode('utf-8'), 16)
+            start_time = time.perf_counter() 
+            result = attack_from_public_key(e, n)
+            elapsed_time = time.perf_counter() - start_time
             
-            cipher_out = bytearray()
-            for i in range(0, len(padded_msg), 16):
-                block = list(padded_msg[i:i + 16])
-                cipher_out.extend(bytes(aes_engine.encrypt_block(block, expanded_secret)))
-            
-            st.session_state['aes_demo_target'] = {
-                "cipher": bytes(cipher_out),
-                "plain": attack_msg.encode('utf-8'),
-                "bits": target_search_bits,
-                "mode": aes_mode
-            }
-            st.success("ターゲットを生成しました。")
+            status_area.empty()
+            if result["success"]:
+                st.success(f"🎉 解読成功！ 秘密鍵 d = {result['d']}")
+                
+                # メトリクス表示
+                c1, c2 = st.columns(2)
+                c1.metric("解読時間", f"{elapsed_time:.4f} 秒")
+                c2.metric("素数 p", f"{result['p']}")
+                
+                # 履歴に追加
+                st.session_state['attack_history'].append({
+                    "暗号": f"RSA ({wk['bits']}bit)",
+                    "時間(秒)": elapsed_time,
+                    "タイプ": "RSA"
+                })
+                st.balloons()
+            else:
+                st.error("攻撃に失敗しました。")
+                
+#=============================
+# --- AES脆弱性デモ ページ ---
+#=============================
+elif st.session_state['current_page'] == "Demo_AES":
+    st.header("🛡️ AES脆弱性デモ (総当たり攻撃)")
+    st.warning("⚠️ 短い鍵を全パターン試して解読する実験です。")
 
-        # ターゲット情報の表示
-        if 'aes_demo_target' in st.session_state:
-            tgt = st.session_state['aes_demo_target']
-            st.code(f"暗号文 (Hex): {tgt['cipher'].hex()}", language="text")
-            
-            # --- STEP 3: 攻撃実行 ---
-            st.divider()
-            st.subheader("STEP3: 総当たり攻撃の実行")
-            
-            if st.button("総当たり開始 (Brute Force Attack!)", type="primary"):
-                aes_engine = AES(tgt['mode'])
-                
-                start_time = time.perf_counter()
-                with st.spinner("鍵を全パターン試行中..."):
-                    found_key, attempts = brute_force_search(
-                        aes_engine, tgt['cipher'], tgt['plain'], tgt['mode'], tgt['bits']
-                    )
-                end_time = time.perf_counter()
-                
-                elapsed_sec = end_time - start_time
-                st.session_state['aes_attack_results'] = {
-                    "found_key": found_key,
-                    "attempts": attempts,
-                    "time": elapsed_sec,
-                    "speed": attempts / elapsed_sec if elapsed_sec > 0 else 0
-                }
+    # ヘルパー関数（ページ内で定義）
+    from typing import Tuple
+    def pkcs7_pad_local(data: bytes, block_size: int = 16) -> bytes:
+        pad_len = block_size - (len(data) % block_size)
+        return data + bytes([pad_len] * pad_len)
 
-            # 結果の表示
-            if 'aes_attack_results' in st.session_state:
-                res = st.session_state['aes_attack_results']
-                if res['found_key']:
-                    st.success(f"🔓 鍵を発見しました！: **{res['found_key'].hex()}**")
-                    st.balloons()
-                
-                st.divider()
-                st.subheader("📊 攻撃計測結果")
-                m_c1, m_c2, m_c3 = st.columns(3)
-                m_c1.metric("解析時間", f"{res['time']:.4f} 秒")
-                m_c2.metric("試行回数", f"{res['attempts']} 回")
-                m_c3.metric("解析速度", f"{res['speed']:.0f} keys/s")
-                
-                st.info(f"この速度で 128bit 鍵をすべて試すには、約 **{(2**128 / res['speed'] / (3600*24*365)):.2e} 年** かかります。")
+    def brute_force_search(aes_obj, cipher_bytes, plaintext_bytes, key_size_bits, search_bits):
+        key_bytes_len = key_size_bits // 8
+        total = 1 << search_bits
+        padded_plain = pkcs7_pad_local(plaintext_bytes, 16)
+        for candidate_int in range(total):
+            candidate_key = candidate_int.to_bytes(key_bytes_len, 'big')
+            expanded = aes_obj.key_expansion(candidate_key)
+            out = bytearray()
+            for i in range(0, len(padded_plain), 16):
+                block = list(padded_plain[i:i + 16])
+                out.extend(bytes(aes_obj.encrypt_block(block, expanded)))
+            if bytes(out) == cipher_bytes:
+                return candidate_key, candidate_int + 1
+        return None, total
 
+    # STEP 1: 設定
+    st.subheader("STEP1: 攻撃対象の設定")
+    col1, col2 = st.columns(2)
+    with col1:
+        target_bits = st.slider("探索ビット数", 8, 22, 14)
+    with col2:
+        aes_mode = st.selectbox("AES鍵長", [128, 192, 256])
+
+    # STEP 2: 生成
+    st.subheader("STEP2: ターゲット生成")
+    attack_msg = st.text_input("メッセージ", "Secret123")
+    if st.button("攻撃対象を生成"):
+        secret_int = secrets.randbelow(1 << target_bits)
+        secret_key = secret_int.to_bytes(aes_mode // 8, 'big')
+        aes_engine = AES(aes_mode)
+        padded = pkcs7_pad_local(attack_msg.encode(), 16)
+        expanded = aes_engine.key_expansion(secret_key)
+        cipher = b"".join([bytes(aes_engine.encrypt_block(list(padded[i:i+16]), expanded)) for i in range(0, len(padded), 16)])
+        st.session_state['aes_demo_target'] = {"cipher": cipher, "plain": attack_msg.encode(), "bits": target_bits, "mode": aes_mode}
+
+    # STEP 3: 実行
+    if 'aes_demo_target' in st.session_state:
+        tgt = st.session_state['aes_demo_target']
+        st.info(f"暗号文: {tgt['cipher'].hex()}")
+        if st.button("総当たり開始", type="primary"):
+            start_time = time.perf_counter()
+            found_key, attempts = brute_force_search(AES(tgt['mode']), tgt['cipher'], tgt['plain'], tgt['mode'], tgt['bits'])
+            elapsed = time.perf_counter() - start_time
+            
+            if found_key:
+                st.success(f"🔓 発見！: {found_key.hex()}")
+                st.session_state['attack_history'].append({
+                    "暗号": f"AES ({tgt['bits']}bit)",
+                    "時間(秒)": elapsed,
+                    "タイプ": "AES"
+                })
+                # メトリクス
+                m1, m2 = st.columns(2)
+                m1.metric("解析時間", f"{elapsed:.4f} 秒")
+                m2.metric("試行回数", f"{attempts} 回")
+
+#=============================
+# --- 攻撃比較グラフ ページ ---
+#=============================
+elif st.session_state['current_page'] == "Compare":
+    st.header("📊 攻撃・解読時間の比較")
+    st.info("これまでのデモで計測された解読時間を比較します。アルゴリズムやビット数による計算量の違いを確認しましょう。")
+
+    if not st.session_state.get('attack_history') or len(st.session_state['attack_history']) == 0:
+        st.warning("⚠️ まだデータがありません。「RSA脆弱性デモ」や「AES脆弱性デモ」を実行してデータを蓄積してください。")
+    else:
+        import pandas as pd
+        import plotly.express as px
+
+        # データの準備
+        df = pd.DataFrame(st.session_state['attack_history'])
+
+        # --- グラフ表示エリア ---
+        st.subheader("解読時間の視覚的比較")
+        
+        # Plotlyを使ってリッチなグラフを作成
+        fig = px.bar(
+            df, 
+            x="暗号", 
+            y="時間(秒)", 
+            color="タイプ",
+            text="時間(秒)",
+            labels={"時間(秒)": "解読にかかった時間 (sec)"},
+            title="解読時間の比較グラフ",
+            color_discrete_map={"RSA": "#FF4B4B", "AES": "#0068C9"} # RSAは赤、AESは青で統一
+        )
+        
+        # テキストのフォーマット調整
+        fig.update_traces(texttemplate='%{text:.4f}s', textposition='outside')
+        fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+        
+        st.plotly_chart(fig, use_container_width=True)
+
+        # --- データ詳細エリア ---
+        st.divider()
+        st.subheader("📑 実行ログ詳細")
+        
+        # テーブル形式で表示
+        st.dataframe(
+            df[["暗号", "時間(秒)", "タイプ"]],
+            column_config={
+                "時間(秒)": st.column_config.NumberColumn(format="%.4f 秒")
+            },
+            use_container_width=True
+        )
+
+        # --- 操作エリア ---
+        st.divider()
+        col_ex1, col_ex2 = st.columns(2)
+        with col_ex1:
+            if st.button("履歴をクリア"):
+                st.session_state['attack_history'] = []
+                st.rerun()
+        with col_ex2:
+            st.caption("※ ページをリロードすると履歴は消去されます。")
+
+    # 教育的メモ
+    with st.expander("解説：なぜ時間がこれほど違うのか？"):
+        st.markdown("""
+        - **RSA (素因数分解):** 数学的な構造（素数）を崩す攻撃です。ビット数が増えると計算量は増えますが、総当たりよりは効率的なアルゴリズムが存在します。
+        - **AES (総当たり):** 鍵の候補を1つずつ試す力任せの攻撃です。**1ビット増えるごとに計算時間が正確に2倍**になる指数関数的な増加を体感できます。
+        - **デモでの注意:** デモ用の短い鍵（16-24bit）は数秒で解読できますが、実際の128bitや2048bitは、現代のスーパーコンピュータを何兆年動かしても解読できないほど巨大な数値です。
+        """)
 
 
 
