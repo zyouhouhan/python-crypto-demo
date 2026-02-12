@@ -491,7 +491,6 @@ if 'current_page' not in st.session_state:
 
 # 2. サイドバーをナビゲーションメニューにする
 with st.sidebar:
-    st.title("🛡️ Crypto Dashboard")
     st.markdown("---")
     
     # 各ボタン。クリックするとページ状態が更新される
@@ -501,7 +500,10 @@ with st.sidebar:
         st.session_state['current_page'] = "AES"
     if st.button("💥 脆弱性デモ", use_container_width=True):
         st.session_state['current_page'] = "Demo"
-
+    if st.button("💥 AES 脆弱性デモ", use_container_width=True):
+        st.session_state['current_page'] = "Demo_AES"
+    if st.button("📊 攻撃比較グラフ", use_container_width=True):
+        st.session_state['current_page'] = "Compare"
 
 # ==========================================
 # 3. メインコンテンツの表示切り替え
@@ -850,6 +852,7 @@ elif st.session_state['current_page'] == "Demo":
                 m_c3.metric("解析速度", f"{res['speed']:.0f} keys/s")
                 
                 st.info(f"この速度で 128bit 鍵をすべて試すには、約 **{(2**128 / res['speed'] / (3600*24*365)):.2e} 年** かかります。")
+
 
 
 
