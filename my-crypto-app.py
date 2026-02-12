@@ -825,46 +825,48 @@ elif st.session_state['current_page'] == "Demo_AES":
 #=============================
 elif st.session_state['current_page'] == "Compare":
     st.header("📊 攻撃・解読時間の比較")
-    st.info("計測された解読時間を比較します。アルゴリズムやビット数による計算量の違いを確認しましょう。")
-
+    
     if not st.session_state.get('attack_history') or len(st.session_state['attack_history']) == 0:
-        st.warning("⚠️ まだデータがありません。「脆弱性デモ」を実行してデータを蓄積してください。")
+        st.warning("⚠️ まだデータがありません。")
     else:
-        # データの準備
         import pandas as pd
+        import matplotlib.pyplot as plt
+
         df = pd.DataFrame(st.session_state['attack_history'])
 
-        # --- グラフ表示エリア ---
-        st.subheader("解読時間の視覚的比較")
+        # --- 完全な「画像」としてグラフを作成 ---
+        fig, ax = plt.subplots(figsize=(10, 5))
         
-        # Streamlit標準のシンプルな棒グラフ（ズーム機能なしで快適）
-        st.bar_chart(
-            df, 
-            x="タイプ", 
-            y="時間(秒)", 
-            color="暗号", # RSAとAESで自動で色分け
-            use_container_width=True
-        )
-
-        # --- データ詳細エリア ---
-        st.divider()
-        st.subheader("📑 実行ログ詳細")
+        # 色の設定（RSA=赤, AES=青）
+        colors = ['#FF4B4B' if x == 'RSA' else '#0068C9' for x in df['暗号']]
         
-        st.dataframe(
-            df[["暗号", "時間(秒)", "タイプ"]],
-            column_config={
-                "時間(秒)": st.column_config.NumberColumn(format="%.4f 秒")
-            },
-            use_container_width=True,
-            hide_index=True # インデックスを隠してスッキリ
-        )
+        # 棒グラフを描画
+        bars = ax.bar(df['タイプ'], df['時間(秒)'], color=colors)
+        
+        # グラフのデザイン調整
+        ax.set_ylabel('時間 (秒)')
+        ax.set_title('解読時間の比較')
+        plt.xticks(rotation=45) # 文字が重ならないよう斜めに
+        
+        # 棒の上に秒数を表示
+        for bar in bars:
+            yval = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2, yval, f'{yval:.4f}s', 
+                    va='bottom', ha='center', fontsize=9)
 
-        # --- 操作エリア ---
+        plt.tight_layout()
+
+        # st.pyplot() を使うことで「ただの画像」として表示
+        # これにより、ズームやツールチップなどの余計な機能が一切消えます
+        st.pyplot(fig)
+
+        # --- 詳細データ（表） ---
         st.divider()
+        st.dataframe(df[["暗号", "時間(秒)", "タイプ"]], use_container_width=True, hide_index=True)
+
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
-
 
 
 
