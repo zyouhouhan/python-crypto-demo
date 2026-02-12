@@ -770,6 +770,7 @@ elif st.session_state['current_page'] == "Demo":
             return None, attempts
 
         # --- STEP 1: 設定 ---
+        st.divider()
         st.subheader("STEP1: 攻撃対象の設定")
         col_cfg1, col_cfg2 = st.columns(2)
         with col_cfg1:
@@ -849,6 +850,7 @@ elif st.session_state['current_page'] == "Demo":
                 m_c3.metric("解析速度", f"{res['speed']:.0f} keys/s")
                 
                 st.info(f"この速度で 128bit 鍵をすべて試すには、約 **{(2**128 / res['speed'] / (3600*24*365)):.2e} 年** かかります。")
+
 
 
 
