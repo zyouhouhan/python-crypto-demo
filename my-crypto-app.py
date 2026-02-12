@@ -824,7 +824,7 @@ elif st.session_state['current_page'] == "Demo_AES":
 # --- 攻撃比較グラフ ページ ---
 #=============================
 elif st.session_state['current_page'] == "Compare":
-    st.header("📊 攻撃・解読時間の比較")
+    st.subheader("📊 攻撃・解読時間の比較")
     
     if not st.session_state.get('attack_history') or len(st.session_state['attack_history']) == 0:
         st.warning("⚠️ まだデータがありません。")
@@ -867,6 +867,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
