@@ -495,17 +495,21 @@ if 'attack_history' not in st.session_state:
     
 # 2. サイドバーをナビゲーションメニューにする
 with st.sidebar:
-    st.markdown("---")
     
-    # 各ボタン。クリックするとページ状態が更新される
     if st.button("🔑 RSA (公開鍵暗号)", use_container_width=True):
         st.session_state['current_page'] = "RSA"
     if st.button("🛡️ AES (共通鍵暗号)", use_container_width=True):
         st.session_state['current_page'] = "AES"
+    
+    st.markdown("---")
+    st.subheader("Vulnerability Demo")
+    # ここを分けることで、RSAデモが表示されない問題を解決します
     if st.button("💥 RSA 脆弱性デモ", use_container_width=True):
-        st.session_state['current_page'] = "Demo"
+        st.session_state['current_page'] = "Demo_RSA"
     if st.button("💥 AES 脆弱性デモ", use_container_width=True):
         st.session_state['current_page'] = "Demo_AES"
+    
+    st.markdown("---")
     if st.button("📊 安全性比較グラフ", use_container_width=True):
         st.session_state['current_page'] = "Compare"
 
@@ -886,6 +890,7 @@ elif st.session_state['current_page'] == "Compare":
         - **AES (総当たり):** 鍵の候補を1つずつ試す力任せの攻撃です。**1ビット増えるごとに計算時間が正確に2倍**になる指数関数的な増加を体感できます。
         - **デモでの注意:** デモ用の短い鍵（16-24bit）は数秒で解読できますが、実際の128bitや2048bitは、現代のスーパーコンピュータを何兆年動かしても解読できないほど巨大な数値です。
         """)
+
 
 
 
