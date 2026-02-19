@@ -641,9 +641,9 @@ elif st.session_state['current_page'] == "AES":
     col_aes_enc, col_aes_dec = st.columns(2)
     aes_obj = AES(aes_bits)
     with col_aes_enc:
-        if st.button("暗号化 (Encrypt)"):
+        if st.button("暗号化 (Encrypt)", key="aes_enc_btn"):
             if aes_msg:
-                start_enc = time.time() # 計測開始
+                start_enc = time.time()  # 計測開始
                 expanded_key = aes_obj.key_expansion(st.session_state['aes_key'])
                 padded = pkcs7_pad(aes_msg.encode('utf-8'))
                 out = bytearray()
@@ -652,15 +652,11 @@ elif st.session_state['current_page'] == "AES":
                     enc_block = aes_obj.encrypt_block(block, expanded_key)
                     out.extend(bytes(enc_block))
                 st.session_state['aes_cipher'] = bytes(out)
-                st.session_state['aes_enc_time'] = (time.time() - start_enc) * 1000 # AES用の変数に保存
+                st.session_state['aes_enc_time'] = (time.time() - start_enc) * 1000  # AES用の変数に保存
                 
         if 'aes_cipher' in st.session_state:
-                st.code(st.session_state['aes_cipher'].hex(), language="text")
-                st.info("""
-                    この暗号文は、入力されている平文をAES暗号を用いて暗号化したものです。
-                        
-                    この暗号文から第三者が平文を簡単に予測することは不可能です。
-                    """)
+            st.code(st.session_state['aes_cipher'].hex(), language="text")
+            st.info("この暗号文は、入力されている平文をAES暗号を用いて暗号化したものです。\n\nこの暗号文から第三者が平文を簡単に予測することは不可能です。")
                 
     with col_aes_dec:
        if 'aes_cipher' in st.session_state:
@@ -861,6 +857,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
