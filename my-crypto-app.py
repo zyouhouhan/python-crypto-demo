@@ -555,31 +555,24 @@ if st.session_state['current_page'] == "RSA":
     st.subheader("STEP2: 暗号化/復号")
     rsa_msg = st.text_input("暗号化したいメッセージ (任意の文章を暗号化できます)", "Hello, RSA World!")
     col_enc, col_dec = st.columns(2)
+    
     with col_enc:
         if st.button("暗号化 (Encrypt)"):
-            # ここで「保存されている鍵」があるかチェックし、直接取り出す
             if st.session_state['rsa_keys'] and rsa_msg:
-                # pub と priv をその場で取り出す
                 pub_key, priv_key = st.session_state['rsa_keys']
                 
                 start_time = time.time()
-                # 取り出した pub_key を使う
                 st.session_state['rsa_cipher'] = rsa_encrypt(pub_key, rsa_msg)
-                
                 st.session_state['rsa_enc_time'] = (time.time() - start_time) * 1000
                 
-                # 前回の NameError 対策も合わせて修正（encrypted_ints を使わない）
                 st.session_state['rsa_cipher_show'] = "".join([f"{x:x}" for x in st.session_state['rsa_cipher']])
             else:
                 st.error("鍵が生成されていないか、メッセージが空です。")
                 
+        # st.button の外（同じ列内）に出すためにインデントを調整しました
         if 'rsa_cipher_show' in st.session_state:
             st.text_area("暗号文 (16進数表現)", st.session_state['rsa_cipher_show'], height=100)
-            st.info("""
-            この暗号文は、入力されている平文をRSA暗号を用いて暗号化したものです。
-
-            この暗号文から第三者が平文を簡単に予測することは不可能です。
-            """)
+            st.info("この暗号文は、入力されている平文をRSA暗号を用いて暗号化したものです。\n\nこの暗号文から第三者が平文を簡単に予測することは不可能です。")
                 
     with col_dec:
         if 'rsa_cipher' in st.session_state:
@@ -868,6 +861,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
