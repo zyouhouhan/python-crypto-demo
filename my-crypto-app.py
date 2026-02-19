@@ -527,17 +527,18 @@ if st.session_state['current_page'] == "RSA":
 
     col1, col2 = st.columns([2, 1])
     with col1:
-        bits = st.selectbox("鍵のビット長 (大きいほど安全ですが遅くなります)", [512, 1024, 2048], index=1)
-        help="""ビット長（鍵の長さ）が長いほど、解読に必要な『素因数分解』に時間がかかるため安全性が高まります。
+        help_text = "ビット長（鍵の長さ）が長いほど、解読に必要な『素因数分解』に時間がかかるため安全性が高まります。"
+        bits = st.selectbox("鍵のビット長 (大きいほど安全ですが遅くなります)", [512, 1024, 2048], index=1, help=help_text)
+        
     with col2:
         st.write("")
-    if st.button("鍵ペアを生成"):
-            start_time = time.time()
-            st.session_state['rsa_keys'] = generate_rsa_keypair(bits)
-            g_elapsed = (time.time() - start_time) * 1000
-            st.session_state['rsa_gen_time'] = g_elapsed
-            st.success(f"鍵生成完了 ({g_elapsed/1000:.3f}秒)")
 
+    if st.button("鍵ペアを生成"):
+        start_time = time.time()
+        st.session_state['rsa_keys'] = generate_rsa_keypair(bits)
+        g_elapsed = (time.time() - start_time) * 1000
+        st.session_state['rsa_gen_time'] = g_elapsed
+        st.success(f"鍵生成完了 ({g_elapsed/1000:.3f}秒)")
     if st.session_state['rsa_keys']:
         pub, priv = st.session_state['rsa_keys']
         e, n = pub
@@ -857,6 +858,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
