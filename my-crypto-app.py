@@ -589,8 +589,10 @@ if st.session_state['current_page'] == "RSA":
         st.success(f"復号された平文: {st.session_state['rsa_decrypted']}")
         
     st.divider()
-    st.subheader("STEP3: イベント別計測結果"
-    help="ここで言う『イベント』とは、暗号化の各工程（鍵を作る、暗号化する、元に戻す）に要した処理時間のことです。")
+    st.subheader(
+        "STEP3: イベント別計測結果",
+        help="ここで言う『イベント』とは、暗号化の各工程（鍵を作る、暗号化する、元に戻す）に要した処理時間のことです。"
+    )
     g_t = st.session_state.get('rsa_gen_time', 0.0)
     e_t = st.session_state.get('rsa_enc_time', 0.0)
     d_t = st.session_state.get('rsa_dec_time', 0.0)
@@ -860,6 +862,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
