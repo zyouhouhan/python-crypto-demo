@@ -573,12 +573,12 @@ if st.session_state['current_page'] == "RSA":
             else:
                 st.error("鍵が生成されていないか、メッセージが空です。")
                 
-        if 'rsa_cipher_show' in st.session_state:
+       if 'rsa_cipher_show' in st.session_state:
             st.text_area("暗号文 (16進数表現)", st.session_state['rsa_cipher_show'], height=100)
             st.info("""
-        この暗号文は、入力されている平文をRSA暗号を用いて暗号化したものです。
-                
-        この暗号文から第三者が平文を簡単に予測することは不可能です。
+            この暗号文は、入力されている平文をRSA暗号を用いて暗号化したものです。
+
+            この暗号文から第三者が平文を簡単に予測することは不可能です。
             """)
                 
     with col_dec:
@@ -868,6 +868,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
