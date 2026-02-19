@@ -587,6 +587,7 @@ if st.session_state['current_page'] == "RSA":
     
     if 'rsa_decrypted' in st.session_state:
         st.success(f"復号された平文: {st.session_state['rsa_decrypted']}")
+        st.info("秘密鍵（d）を使って計算を行うことで、元の平文を取り出しました。\n\n最初に設定した平文と同一のものであることを確認してください。")
         
     st.divider()
     st.subheader(
@@ -862,6 +863,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
