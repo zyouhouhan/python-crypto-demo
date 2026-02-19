@@ -605,6 +605,7 @@ if st.session_state['current_page'] == "RSA":
 
     st.divider()
     st.info(f"合計処理時間: **{g_t + e_t + d_t:.2f} ミリ秒**")
+    st.caption("※ **ミリ秒 (ms)** とは、1秒の1000分の1を表す単位です。 (1,000ms = 1秒)")
     
 #===================
 # --- AES ページ ---
@@ -863,6 +864,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
