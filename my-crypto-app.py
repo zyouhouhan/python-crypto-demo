@@ -528,7 +528,7 @@ if st.session_state['current_page'] == "RSA":
     col1, col2 = st.columns([2, 1])
     with col1:
         help_text = "『鍵のビット長』とは鍵の長さ（サイズ）のこと"
-        label_text = ":orange[鍵のビット長] (大きいほど安全ですが遅くなります)"
+        label_text = ":orange[鍵のビット長] (大きいほど安全ですが処理に時間がかかります)"
         bits = st.selectbox(label_text, [512, 1024, 2048], index=1, help=help_text)
         
     with col2:
@@ -859,6 +859,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
