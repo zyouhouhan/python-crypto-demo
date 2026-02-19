@@ -816,6 +816,7 @@ elif st.session_state['current_page'] == "Demo_AES":
                 m1, m2 = st.columns(2)
                 m1.metric("解析時間", f"{elapsed:.4f} 秒")
                 m2.metric("試行回数", f"{attempts} 回")
+                st.balloons()
 
 #=============================
 # --- 攻撃比較グラフ ページ ---
@@ -864,6 +865,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
