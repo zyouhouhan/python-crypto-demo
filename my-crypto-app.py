@@ -528,6 +528,7 @@ if st.session_state['current_page'] == "RSA":
     col1, col2 = st.columns([2, 1])
     with col1:
         bits = st.selectbox("鍵のビット長 (大きいほど安全ですが遅くなります)", [512, 1024, 2048], index=1)
+        help="""ビット長（鍵の長さ）が長いほど、解読に必要な『素因数分解』に時間がかかるため安全性が高まります。
     with col2:
         st.write("")
     if st.button("鍵ペアを生成"):
@@ -867,6 +868,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
