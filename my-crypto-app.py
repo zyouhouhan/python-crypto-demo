@@ -737,6 +737,7 @@ elif st.session_state['current_page'] == "Demo_RSA":
 """)
         
         if st.button("攻撃開始 (Attack!)", type="primary"):
+            st.caption("※学習用デモのため、攻撃（素因数分解）処理は短時間で完了します。")
             status_area = st.empty()
             status_area.warning("🔍 秘密鍵を探索中... (素因数分解を実行中)")
             
@@ -880,6 +881,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
