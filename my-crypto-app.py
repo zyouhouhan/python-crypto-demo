@@ -481,9 +481,8 @@ with st.expander("ℹ️ 解説3：AES暗号（共通鍵暗号）"):
 st.markdown("""
 Pythonのみでゼロから実装した **RSA** と **AES** 暗号アルゴリズムのデモアプリです。
 内部の数学的処理やビット操作をコードで完全に再現しています。
-
-丸い？マークをクリックすると語句の解説を見ることができます。
 """)
+st.caption("丸い？マークをクリックすると語句の解説を見ることができます。")
 st.divider()
 # ==========================================
 # スライド風タブメニュー（サイドバー切り替え）
@@ -867,6 +866,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
