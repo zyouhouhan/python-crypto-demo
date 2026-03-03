@@ -710,7 +710,7 @@ elif st.session_state['current_page'] == "AES":
 #=============================
 elif st.session_state['current_page'] == "Demo_RSA":
     st.header("🔑 RSA脆弱性デモ ")
-    st.warning("⚠️ 公開鍵から秘密鍵を特定する実験です。")
+    st.markdown("実験内容：公開鍵から秘密鍵を計算で特定します。")
     
     if 'weak_keys' not in st.session_state:
         st.session_state['weak_keys'] = None
@@ -875,6 +875,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
