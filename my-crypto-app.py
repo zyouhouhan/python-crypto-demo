@@ -614,6 +614,7 @@ if st.session_state['current_page'] == "RSA":
 elif st.session_state['current_page'] == "AES":
     st.header("🛡️ AES Encryption")
     st.info("SPN構造を持つ、現在標準的な共通鍵暗号方式です。")
+    help="SPN（置換・順列ネットワーク）とは、データを『別の値に置き換える操作』と『並び順をシャッフルする操作』を交互に繰り返すことで、平文のパターンを完全に消し去る暗号の基本構造のことです。"
     
     st.subheader("STEP1: 鍵を生成")
     if 'aes_key' not in st.session_state:
@@ -866,6 +867,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
