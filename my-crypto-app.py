@@ -738,7 +738,6 @@ elif st.session_state['current_page'] == "Demo_RSA":
         st.caption("※学習用デモのため、攻撃（素因数分解）処理は短時間で完了します。")
         
         if st.button("攻撃開始 (Attack!)", type="primary"):
-            st.caption("※学習用デモのため、攻撃（素因数分解）処理は短時間で完了します。")
             status_area = st.empty()
             status_area.warning("🔍 秘密鍵を探索中... (素因数分解を実行中)")
             
@@ -816,7 +815,16 @@ elif st.session_state['current_page'] == "Demo_AES":
     # STEP 3: 実行
     if 'aes_demo_target' in st.session_state:
         tgt = st.session_state['aes_demo_target']
-        st.info(f"暗号文: {tgt['cipher'].hex()}")
+        st.info(f"""
+        **暗号文:** `{tgt['cipher'].hex()}`
+
+        ---
+        **💡 総当たり攻撃の仕組み:**
+        この攻撃は、設定したビット数（$2^{{{tgt['bits']}}}$ 通り = {1 << tgt['bits']:,} 通り）の鍵をすべて生成し、
+        暗号文を復号して元のメッセージになる鍵を探し出します。
+        鍵長が長くなると計算量は爆発的に増え、現実的な時間での解読は不可能になります。
+        """)
+        st.caption("※学習用デモのため、探索範囲を限定しており短時間で完了します。")
         if st.button("総当たり開始", type="primary"):
             start_time = time.perf_counter()
             found_key, attempts = brute_force_search(AES(tgt['mode']), tgt['cipher'], tgt['plain'], tgt['mode'], tgt['bits'])
@@ -882,6 +890,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
