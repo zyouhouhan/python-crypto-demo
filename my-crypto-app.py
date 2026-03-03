@@ -625,6 +625,7 @@ elif st.session_state['current_page'] == "AES":
     col_a1, col_a2 = st.columns([3, 1])
     with col_a1:
         key_input = st.text_input("秘密鍵 (Hex)", value="" if not st.session_state['aes_key'] else st.session_state['aes_key'].hex())
+        help="16進数（Hexadecimal）"
     with col_a2:
         st.write("")
         if st.button("ランダム鍵生成"):
@@ -868,6 +869,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
