@@ -482,7 +482,7 @@ st.markdown("""
 Pythonのみでゼロから実装した **RSA** と **AES** 暗号アルゴリズムのデモアプリです。
 内部の数学的処理やビット操作をコードで完全に再現しています。
 """)
-st.caption("丸い？マークをクリックすると語句の解説を見ることができます。")
+st.caption("※丸い？マークをクリックすると語句の解説を見ることができます。")
 st.divider()
 # ==========================================
 # スライド風タブメニュー（サイドバー切り替え）
@@ -593,7 +593,7 @@ if st.session_state['current_page'] == "RSA":
     st.divider()
     st.subheader(
         "STEP3: イベント別計測結果",
-        help="ここで言う『イベント』とは、暗号化の各工程（鍵を作る、暗号化する、元に戻す）に要した処理時間のことです。"
+        help="ここで言う『イベント』とは、暗号化・復号の際に行われる各作業工程（鍵を作る、暗号化する、元に戻すなど）の総称です。"
     )
     g_t = st.session_state.get('rsa_gen_time', 0.0)
     e_t = st.session_state.get('rsa_enc_time', 0.0)
@@ -866,6 +866,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
