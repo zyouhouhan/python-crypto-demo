@@ -817,8 +817,7 @@ elif st.session_state['current_page'] == "Demo_AES":
         tgt = st.session_state['aes_demo_target']
         st.info(f"""
         **暗号文:** `{tgt['cipher'].hex()}`
-
-        ---
+        
         **💡 総当たり攻撃の仕組み:**
         この攻撃は、設定したビット数（$2^{{{tgt['bits']}}}$ 通り = {1 << tgt['bits']:,} 通り）の鍵をすべて生成し、
         暗号文を復号して元のメッセージになる鍵を探し出します。
@@ -890,6 +889,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
