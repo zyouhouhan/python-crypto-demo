@@ -710,7 +710,7 @@ elif st.session_state['current_page'] == "AES":
 #=============================
 elif st.session_state['current_page'] == "Demo_RSA":
     st.header("🔑 RSA脆弱性デモ ")
-    st.markdown("実験内容：公開鍵から秘密鍵を計算で特定します。")
+    st.markdown("公開鍵から秘密鍵を計算で特定します。")
     
     if 'weak_keys' not in st.session_state:
         st.session_state['weak_keys'] = None
@@ -729,7 +729,12 @@ elif st.session_state['current_page'] == "Demo_RSA":
         wk = st.session_state['weak_keys']
         e, n = wk['pub']
         
-        st.info(f"現在の公開鍵 (n): {n} ({wk['bits']} bit)")
+        st.info(f"""
+**現在の公開鍵 (n):** {n} ({wk['bits']} bit)
+
+この公開鍵 $n$ は、2つの素数 $p$ と $q$ を掛け合わせたものです ($n = p \\times q$)。
+「攻撃開始」ボタンを押すと、この $n$ を素因数分解して $p$ と $q$ を導き出し、秘密鍵 $d$ を逆算します。
+""")
         
         if st.button("攻撃開始 (Attack!)", type="primary"):
             status_area = st.empty()
@@ -763,7 +768,7 @@ elif st.session_state['current_page'] == "Demo_RSA":
 #=============================
 elif st.session_state['current_page'] == "Demo_AES":
     st.header("🛡️ AES脆弱性デモ ")
-    st.warning("⚠️ 短い鍵を全パターン試して解読する実験です。")
+    st.markdown("短い鍵を全パターン試して解読する実験です。")
 
     # ヘルパー関数（ページ内で定義）
     from typing import Tuple
@@ -875,6 +880,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
