@@ -735,6 +735,7 @@ elif st.session_state['current_page'] == "Demo_RSA":
 この公開鍵 $n$ は、2つの素数 $p$ と $q$ を掛け合わせたものです ($n = p \\times q$)。
 「攻撃開始」ボタンを押すと、この $n$ を素因数分解して $p$ と $q$ を導き出し、秘密鍵 $d$ を逆算します。
 """)
+        st.caption("※学習用デモのため、攻撃（素因数分解）処理は短時間で完了します。")
         
         if st.button("攻撃開始 (Attack!)", type="primary"):
             st.caption("※学習用デモのため、攻撃（素因数分解）処理は短時間で完了します。")
@@ -881,6 +882,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
