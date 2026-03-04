@@ -397,7 +397,6 @@ st.set_page_config(page_title="Classic Crypto Demo", page_icon="🔐", layout="c
 
 with st.sidebar:
     try:
-        st.image("icon.jpeg", width=150)
     except:
         pass
 
@@ -889,6 +888,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
