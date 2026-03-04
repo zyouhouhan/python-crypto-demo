@@ -906,13 +906,14 @@ elif st.session_state['current_page'] == "Compare":
     2. **PC側の問題**:
        Pythonが裏側で他の処理をしていたり、メモリの整理（ガベージコレクション）を始めたりすると、計算速度が一時的に落ちることがあります。
      """)
-    1回ごとの結果にはムラがありますが、何度か試して「平均」をとると、必ずビット数が大きいほど時間は長くなります。これが暗号の安全性です。
+            st.markdown("1回ごとの結果にはムラがありますが、何度か試して「平均」をとると、必ずビット数が大きいほど時間は長くなります。これが暗号の安全性です。")
     
         st.dataframe(df[["暗号", "時間(秒)", "タイプ"]], use_container_width=True, hide_index=True)
 
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
