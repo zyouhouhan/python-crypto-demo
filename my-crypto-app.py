@@ -849,10 +849,17 @@ elif st.session_state['current_page'] == "Compare":
     else:
         df = pd.DataFrame(st.session_state['attack_history'])
         
+        # 文字列から数字（bit数）を取り出す関数を定義
         def extract_bits(text):
-            # "AES (16bit)" や "RSA (512bit)" から数字だけを抜き出す
             match = re.search(r'\((\d+)bit\)', text)
             return int(match.group(1)) if match else 0
+
+        # 重要】ビット数の数字で並べ替える（昇順：小さい順）
+        df['bit_val'] = df['暗号'].apply(extract_bits)
+        df = df.sort_values(['タイプ', 'bit_val'], ascending=True)
+
+        # 重要】並べ替えた後のデータに合わせて色のリストを作り直す
+        colors = ['#FF4B4B' if x == 'RSA' else '#0068C9' for x in df['タイプ']]
 
         # --- グラフの作成 ---
         plt.style.use('dark_background')
@@ -893,6 +900,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
