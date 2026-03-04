@@ -847,6 +847,7 @@ elif st.session_state['current_page'] == "Compare":
         st.warning("⚠️ まだデータがありません。")
     else:
         df = pd.DataFrame(st.session_state['attack_history'])
+        df = df.sort_values('時間(秒)', ascending=True)
 
         # --- グラフの作成 ---
         plt.style.use('dark_background')
@@ -887,6 +888,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
