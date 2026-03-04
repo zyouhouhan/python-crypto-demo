@@ -896,7 +896,7 @@ elif st.session_state['current_page'] == "Compare":
         # --- 詳細データ（表） ---
         st.divider()
         with st.expander("Q. なぜ短い鍵の方が時間がかかることがあるの？"):
-            st.markdown("稀にbit数が大きいのに解読時間が他よりも短いという結果が出ることがあります。これには**2つの理由**があります。")
+            st.markdown("稀に解読時間のグラフが階段状にならないことがありますが、これには**2つの理由**があります。")
             st.info("""
     1. **運の要素**:
        全数探索は正解を見つけた瞬間に終了します。
@@ -906,27 +906,13 @@ elif st.session_state['current_page'] == "Compare":
     2. **PC側の問題**:
        Pythonが裏側で他の処理をしていたり、メモリの整理（ガベージコレクション）を始めたりすると、計算速度が一時的に落ちることがあります。
      """)
-            st.markdown("1回ごとの結果にはムラがありますが、何度か試して「平均」をとると、必ずビット数が大きいほど時間は長くなります。これが暗号の安全性です。")
+            st.markdown("1回ごとの結果にはムラがありますが、何度か試して「平均」をとると、必ずbit数が大きいほど時間は長くなります。これが暗号の安全性です。")
     
         st.dataframe(df[["暗号", "時間(秒)", "タイプ"]], use_container_width=True, hide_index=True)
 
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
