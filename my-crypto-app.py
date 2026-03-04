@@ -588,7 +588,7 @@ if st.session_state['current_page'] == "RSA":
     st.divider()
     st.subheader(
         "STEP3: イベント別計測結果",
-        help="ここで言う『イベント』とは、暗号化・復号の際に行われる各作業工程（鍵を作る、暗号化する、元に戻すなど）の総称です。"
+        help="ここで言う『イベント』とは、暗号化/復号の際に行われる各作業工程（鍵を作る、暗号化する、元に戻すなど）の総称です。"
     )
     g_t = st.session_state.get('rsa_gen_time', 0.0)
     e_t = st.session_state.get('rsa_enc_time', 0.0)
@@ -686,7 +686,7 @@ elif st.session_state['current_page'] == "AES":
     st.divider()
     st.subheader(
         "STEP3: イベント別計測結果",
-        help="ここで言う『イベント』とは、暗号化・復号の際に行われる各作業工程（鍵を作る、暗号化する、元に戻すなど）の総称です。"
+        help="ここで言う『イベント』とは、暗号化/復号の際に行われる各作業工程（鍵を作る、暗号化する、元に戻すなど）の総称です。"
     )
     ga_t = st.session_state.get('aes_gen_time', 0.0)
     ea_t = st.session_state.get('aes_enc_time', 0.0)
@@ -881,6 +881,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
