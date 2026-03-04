@@ -895,8 +895,9 @@ elif st.session_state['current_page'] == "Compare":
 
         # --- 詳細データ（表） ---
         st.divider()
+        with st.expander("🧐 なぜ「短い鍵」の方が時間がかかることがあるの？（クリックで解説）"):
         st.info("""
-### ❓ なぜ「短い鍵」の方が時間がかかることがあるの？
+### ？ なぜ「短い鍵」の方が時間がかかることがあるの？
 グラフを見ると、たまにビット数が小さいのに時間が長くかかっている逆転現象が起きることがあります。これには**2つの理由**があります。
 
 1. **運の要素（当たり場所）**:
@@ -915,6 +916,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
