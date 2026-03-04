@@ -803,6 +803,10 @@ elif st.session_state['current_page'] == "Demo_AES":
         import secrets
         secret_int = secrets.randbelow(1 << target_bits)
         secret_key = secret_int.to_bytes(aes_mode // 8, 'big')
+        aes_engine = AES(aes_mode)
+        padded = pkcs7_pad_local(attack_msg.encode(), 16)
+        expanded = aes_engine.key_expansion(secret_key)
+        cipher = b"".join([bytes(aes_engine.encrypt_block(list(padded[i:i+16]), expanded)) for i in range(0, len(padded), 16)])
 
     # STEP 3: 実行
     if 'aes_demo_target' in st.session_state:
@@ -907,6 +911,7 @@ Pythonが裏側で他のアプリの処理をしていたり、メモリの整�
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
