@@ -4,8 +4,10 @@ import plotly.express as px
 import secrets
 import time
 import math
+import matplotlib.pyplot as plt
 from datetime import datetime
 from math import gcd
+from typing import Tuple
 
 # ==========================================
 # 1. RSA/AES アルゴリズムの実装 (既存機能)
@@ -850,9 +852,6 @@ elif st.session_state['current_page'] == "Compare":
     if not st.session_state.get('attack_history') or len(st.session_state['attack_history']) == 0:
         st.warning("⚠️ まだデータがありません。")
     else:
-        import pandas as pd
-        import matplotlib.pyplot as plt
-
         df = pd.DataFrame(st.session_state['attack_history'])
 
         # --- 完全な「画像」としてグラフを作成 ---
@@ -888,6 +887,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
