@@ -854,19 +854,19 @@ elif st.session_state['current_page'] == "Compare":
         # 色の設定（RSA=赤, AES=青）
         colors = ['#FF4B4B' if x == 'RSA' else '#0068C9' for x in df['暗号']]
         
-        # 棒グラフを描画
-        bars = ax.bar(df['タイプ'], df['時間(秒)'], color=colors)
+        # --- グラフの文字を英語に変更して文字化けを回避 ---
+        ax.set_ylabel('Time (sec)', color='gray', fontsize=10)
+        ax.set_title('DECRYPTION TIME ANALYSIS', color='white', fontsize=14, fontweight='bold', pad=20)
         
-        # グラフのデザイン調整
-        ax.set_ylabel('時間 (秒)')
-        ax.set_title('解読時間の比較')
-        plt.xticks(rotation=45) # 文字が重ならないよう斜めに
-        
-        # 棒の上に秒数を表示
+        # 棒の下の文字（RSA, AESなど）も英語なので化けません
+        plt.xticks(rotation=15, color='white')
+        plt.yticks(color='gray')
+
+        # 棒の上の数字
         for bar in bars:
             yval = bar.get_height()
             ax.text(bar.get_x() + bar.get_width()/2, yval, f'{yval:.4f}s', 
-                    va='bottom', ha='center', fontsize=9)
+                    va='bottom', ha='center', fontsize=10, color='white', fontweight='bold')
 
         plt.tight_layout()
 
@@ -881,59 +881,6 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
