@@ -396,12 +396,6 @@ def attack_from_public_key(e: int, n: int):
 # ==========================================
 
 st.set_page_config(page_title="Classic Crypto Demo", page_icon="🔐", layout="centered")
-
-with st.sidebar:
-    try:
-    except:
-        pass
-
 st.title("🔐 Pure Python Crypto Demo")
 
 # --- 解説部分（3分割） ---
@@ -887,6 +881,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
