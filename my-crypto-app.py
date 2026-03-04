@@ -850,6 +850,7 @@ elif st.session_state['current_page'] == "Compare":
 
         # --- 完全な「画像」としてグラフを作成 ---
         fig, ax = plt.subplots(figsize=(10, 5))
+        bars = ax.bar(df['暗号'], df['時間(秒)'], color=colors)
         
         # 色の設定（RSA=赤, AES=青）
         colors = ['#FF4B4B' if x == 'RSA' else '#0068C9' for x in df['暗号']]
@@ -881,6 +882,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
