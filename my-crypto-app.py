@@ -893,6 +893,8 @@ elif st.session_state['current_page'] == "Compare":
         plt.tight_layout()
         st.pyplot(fig)
 
+        st.caption("同じ暗号でbit数のみを変化させると、bit数が大きいほど解読時間が長くなります。そのためグラフは階段状に伸びていきます。")
+
         # --- 詳細データ（表） ---
         st.divider()
         with st.expander("Q. なぜ短い鍵の方が時間がかかることがあるの？"):
@@ -907,14 +909,14 @@ elif st.session_state['current_page'] == "Compare":
 
 2. **PC側の動作環境**
    Pythonが裏側で他のアプリの処理をしていたり、メモリの整理（ガベージコレクション）を実行したりすると、計算速度が一時的に落ちることがあります。
+   """)
             st.markdown("1回ごとの結果にはムラがありますが、何度か試して「平均」をとると、必ずbit数が大きいほど時間は長くなります。これが暗号の安全性です。")
-            """)
-    
         st.dataframe(df[["暗号", "時間(秒)", "タイプ"]], use_container_width=True, hide_index=True)
 
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
