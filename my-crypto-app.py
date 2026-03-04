@@ -896,7 +896,7 @@ elif st.session_state['current_page'] == "Compare":
         st.caption("同じ暗号でbit数のみを変化させると、bit数が大きいほど解読時間が長くなります。そのためグラフは階段状に伸びていきます。")
         # --- 詳細データ（表） ---
         st.divider()
-        with st.expander("なぜ短い鍵の方が時間がかかることがあるの？"):
+        with st.expander("グラフが階段状にならない場合の理由"):
             st.markdown("稀に解読時間のグラフが階段状にならないことがありますが、これには**2つの理由**があります。")
             st.info("""
     1. **運の要素（当たり場所）**
@@ -915,6 +915,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
