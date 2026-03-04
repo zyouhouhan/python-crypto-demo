@@ -896,7 +896,7 @@ elif st.session_state['current_page'] == "Compare":
         # --- 詳細データ（表） ---
         st.divider()
         with st.expander("Q. なぜ短い鍵の方が時間がかかることがあるの？"):
-            st.markdown("グラフを見ると、たまにビット数が小さいのに時間が長くかかっている逆転現象が起きることがあります。これには**2つの理由**があります。")
+            st.markdown("稀にbit数が大きいのに解読時間が他よりも短いという結果が出ることがあります。これには**2つの理由**があります。")
             st.info("""
     1. **運の要素**:
        全数探索は正解を見つけた瞬間に終了します。
@@ -913,6 +913,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
