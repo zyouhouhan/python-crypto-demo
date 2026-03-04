@@ -5,6 +5,7 @@ import secrets
 import time
 import math
 import matplotlib.pyplot as plt
+import re
 from datetime import datetime
 from math import gcd
 from typing import Tuple
@@ -847,7 +848,11 @@ elif st.session_state['current_page'] == "Compare":
         st.warning("⚠️ まだデータがありません。")
     else:
         df = pd.DataFrame(st.session_state['attack_history'])
-        df = df.sort_values('時間(秒)', ascending=True)
+        
+        def extract_bits(text):
+            # "AES (16bit)" や "RSA (512bit)" から数字だけを抜き出す
+            match = re.search(r'\((\d+)bit\)', text)
+            return int(match.group(1)) if match else 0
 
         # --- グラフの作成 ---
         plt.style.use('dark_background')
@@ -888,6 +893,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
