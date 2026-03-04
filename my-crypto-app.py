@@ -848,31 +848,36 @@ elif st.session_state['current_page'] == "Compare":
     else:
         df = pd.DataFrame(st.session_state['attack_history'])
 
-        # --- 完全な「画像」としてグラフを作成 ---
+        # --- グラフの作成 ---
+        plt.style.use('dark_background')
         fig, ax = plt.subplots(figsize=(10, 5))
+        fig.patch.set_facecolor('#0E1117')
+        ax.set_facecolor('#0E1117')
+
+        # 1. 色を先に定義
+        colors = ['#FF4B4B' if x == 'RSA' else '#0068C9' for x in df['タイプ']]
         
-        # 色の設定（RSA=赤, AES=青）
-        colors = ['#FF4B4B' if x == 'RSA' else '#0068C9' for x in df['暗号']]
-        bars = ax.bar(df['暗号'], df['時間(秒)'], color=colors)
+        # 2. 横向き棒グラフ (barh) を描画
+        # 縦軸(y)に名称、横軸(width)に時間を設定
+        bars = ax.barh(df['暗号'], df['時間(秒)'], color=colors)
         
-        # --- グラフの文字を英語に変更して文字化けを回避 ---
-        ax.set_ylabel('Time (sec)', color='gray', fontsize=10)
+        # --- グラフの文字設定 ---
+        ax.set_xlabel('Time (sec)', color='gray', fontsize=10) # 横軸を時間
         ax.set_title('DECRYPTION TIME ANALYSIS', color='white', fontsize=14, fontweight='bold', pad=20)
         
-        # 棒の下の文字（RSA, AESなど）も英語なので化けません
-        plt.xticks(rotation=15, color='white')
-        plt.yticks(color='gray')
+        plt.xticks(color='gray')
+        plt.yticks(color='white') # 縦軸（名称）を白く見やすく
 
-        # 棒の上の数字
+        # 3. 棒の横に数値を表示
         for bar in bars:
-            yval = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width()/2, yval, f'{yval:.4f}s', 
-                    va='bottom', ha='center', fontsize=10, color='white', fontweight='bold')
+            xval = bar.get_width()
+            # 数値を棒の右側 (xval) に表示
+            ax.text(xval, bar.get_y() + bar.get_height()/2, f' {xval:.4f}s', 
+                    va='center', ha='left', fontsize=10, color='white', fontweight='bold')
 
+        # グラフがはみ出さないように調整
+        ax.invert_yaxis() # 最新のデータが一番上に来るように反転
         plt.tight_layout()
-
-        # st.pyplot() を使うことで「ただの画像」として表示
-        # これにより、ズームやツールチップなどの余計な機能が一切消えます
         st.pyplot(fig)
 
         # --- 詳細データ（表） ---
@@ -882,6 +887,7 @@ elif st.session_state['current_page'] == "Compare":
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
