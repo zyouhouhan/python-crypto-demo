@@ -403,7 +403,7 @@ st.title("🔐 Pure Python Crypto Demo")
 st.components.v1.html(
     """
     <video width="100%" height="auto" autoplay loop muted playsinline style="border-radius: 10px;">
-        <source src="https://x.gd/j8Hnf" type="video/mp4">
+        <source src="https://hyogoms.sharepoint.com/sites/msteams_00062c/_layouts/15/stream.aspx?id=%2Fsites%2Fmsteams%5F00062c%2FShared%20Documents%2FGeneral%2F%E3%83%93%E3%83%87%E3%82%AA%2D20260305%2D020447%2D15ae9afe%2Emov&referrer=StreamWebApp%2EWeb&referrerScenario=AddressBarCopied%2Eview%2E776492c4%2D30b5%2D43d7%2D964a%2Dfaa4487cc9c7" type="video/mp4">
     </video>
     """,
     height=350,
@@ -1014,6 +1014,7 @@ Pythonが裏側で他のアプリの処理をしていたり、メモリの整�
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
