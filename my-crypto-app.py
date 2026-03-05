@@ -403,7 +403,7 @@ st.title("🔐 Pure Python Crypto Demo")
 st.components.v1.html(
     """
     <video width="100%" height="auto" autoplay loop muted playsinline style="border-radius: 10px;">
-        <source src="https://files.slack.com/files-pri/T09D7D8FV34-F0AJLU8SA8N/download/_________________________________.mp4?origin_team=T09D7D8FV34">
+        <source src="file:///C:/Users/s40G017/Downloads/%E6%83%85%E5%A0%B1%E7%8F%AD%E3%80%80%E3%82%A6%E3%82%A7%E3%83%96%E3%82%B5%E3%82%A4%E3%83%88%20(2).mp4">
     </video>
     """,
     height=350,
@@ -1014,6 +1014,7 @@ Pythonが裏側で他のアプリの処理をしていたり、メモリの整�
         if st.button("履歴をクリア"):
             st.session_state['attack_history'] = []
             st.rerun()
+
 
 
 
