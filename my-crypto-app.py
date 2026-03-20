@@ -523,9 +523,9 @@ with st.expander("ℹ️ 解説2：RSA暗号（公開鍵暗号）"):
 """)
 
     try:
-        st.image("rsa_description.jpg", caption="図解：RSA暗号における公開鍵と秘密鍵の役割", use_container_width=True)
+        st.image("rsa_description.jpg.png", caption="図解：RSA暗号における公開鍵と秘密鍵の役割", use_container_width=True)
     except:
-        st.error("画像(rsa_description.jpg)が見つかりません")
+        st.error("画像(rsa_description.jpg.png)が見つかりません")
 
 
 with st.expander("ℹ️ 解説3：AES暗号（共通鍵暗号）"):
